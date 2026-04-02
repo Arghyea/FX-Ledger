@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForexBill</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#EDECEA;
+  --card:#fff;
+  --G:#1C3829;
+  --G2:#2D5A40;
+  --Gp:#E8F2EC;
+  --Gb:#B4D5C0;
+  --txt:#0F1611;
+  --txt2:#4A5568;
+  --txt3:#9AA8A0;
+  --bdr:#E2E8E4;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 2px 8px rgba(0,0,0,.06),0 12px 40px rgba(0,0,0,.1);
+  --r:16px;--rs:10px;--rss:7px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:14px}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239AA8A0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px!important}
+
+/* HEADER */
+.hdr{height:60px;background:var(--G);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.logo{font-family:'Playfair Display',serif;font-size:20px;color:#fff;font-weight:700;letter-spacing:-.3px}
+.logo span{opacity:.4;font-weight:500}
+.tab-grp{background:rgba(255,255,255,.1);border-radius:10px;padding:3px;display:flex;gap:2px}
+.tab-btn{padding:6px 20px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.02em;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.55);background:transparent}
+.tab-btn.on{background:#fff;color:var(--G);box-shadow:0 1px 4px rgba(0,0,0,.14)}
+
+/* LAYOUT */
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:20px;padding:22px;max-width:1180px;margin:0 auto;align-items:start}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.lc{min-width:0}
+
+/* SECTION CARD */
+.sc{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:14px}
+.sc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--txt3);margin-bottom:14px}
+
+/* SERVICE CHARGES */
+.svc-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.svc-row:last-of-type{border-bottom:none}
+.svc-lbl{font-size:13px;color:var(--txt2);font-weight:500}
+.svc-val{font-size:14px;font-weight:600}
+.svc-inp{width:104px;text-align:right;padding:7px 11px;border:1.5px solid var(--bdr);border-radius:var(--rss);font-size:14px;font-weight:600;font-family:inherit;outline:none;transition:border-color .18s;color:var(--txt)}
+.svc-inp:focus{border-color:var(--G)}
+.svc-footer{background:var(--Gp);margin:-20px;margin-top:12px;padding:12px 20px;border-radius:0 0 var(--r) var(--r);display:flex;justify-content:space-between;align-items:center}
+.svc-footer .lbl{font-size:12px;font-weight:700;color:var(--G)}
+.svc-footer .val{font-size:16px;font-weight:700;color:var(--G)}
+
+/* CURRENCY ROW */
+.cr{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-bottom:12px;border-left:3px solid var(--G);transition:box-shadow .2s}
+.cr:hover{box-shadow:var(--shadow-lg)}
+.cr-top{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.cr-idx{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt3)}
+.cr-tag{background:var(--G);color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:30px}
+.cr-del{margin-left:auto;width:26px;height:26px;border:none;border-radius:6px;background:#FEF2F2;color:#EF4444;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0}
+.cr-del:hover{background:#FEE2E2}
+.cr-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.inp-g{display:flex;flex-direction:column;gap:5px}
+.inp-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3)}
+.inp,.sel{width:100%;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:var(--rss);font-size:13px;font-weight:500;font-family:inherit;color:var(--txt);background:#fff;outline:none;transition:border-color .18s}
+.inp:focus,.sel:focus{border-color:var(--G)}
+.inp.pfx{padding-left:22px}
+.pfx-wrap{position:relative}
+.pfx-sym{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--txt3);pointer-events:none;z-index:1}
+.mode-bar{display:flex;gap:2px;background:var(--bg);border-radius:9px;padding:3px;margin-top:12px}
+.mode-btn{flex:1;padding:6px;border:none;border-radius:7px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;background:transparent;color:var(--txt3);transition:all .18s;letter-spacing:.01em}
+.mode-btn.on{background:var(--G);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.14)}
+.cr-result{margin-top:10px;padding:10px 13px;background:var(--Gp);border:1px solid var(--Gb);border-radius:9px;display:flex;justify-content:space-between;align-items:center}
+.cr-rl{font-size:11px;color:var(--G);font-weight:500}
+.cr-rv{font-size:14px;font-weight:700;color:var(--G)}
+
+/* DENOM HINT */
+.dh{margin-top:9px;background:#FFFBEB;border:1px solid #F59E0B;border-radius:9px;padding:10px 12px;font-size:12px;color:#78350F}
+.dh-btns{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
+.dh-btn{padding:5px 11px;border:1.5px solid #F59E0B;border-radius:7px;background:#fff;font-size:11px;font-weight:700;color:#92400E;cursor:pointer;font-family:inherit;transition:all .15s}
+.dh-btn:hover{background:#FEF3C7}
+
+/* ADD BUTTON */
+.add-btn{width:100%;padding:13px;border:2px dashed var(--bdr);border-radius:var(--r);background:transparent;font-size:13px;font-weight:600;color:var(--txt3);cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.add-btn:hover{border-color:var(--G);color:var(--G);background:var(--Gp)}
+
+/* RIGHT PANEL */
+.rc{position:sticky;top:78px}
+
+/* BILL CARD */
+.bill-outer{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-lg);overflow:hidden;margin-bottom:12px}
+.bill-empty{padding:52px 24px;text-align:center;color:var(--txt3)}
+.bill-empty-ico{font-size:36px;opacity:.35;display:block;margin-bottom:10px}
+.bill-empty p{font-size:13px;line-height:1.6}
+
+/* THRESHOLD BAR */
+.tbar{padding:10px 14px;border-radius:var(--rss);font-size:12px;display:flex;align-items:center;gap:7px;margin-bottom:12px;font-weight:500}
+.tbar.ok{background:var(--Gp);color:var(--G);border:1px solid var(--Gb)}
+.tbar.warn{background:#FFF7ED;color:#92400E;border:1px solid #FED7AA}
+
+/* ACTION BUTTONS */
+.act-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.act-btn{padding:12px 10px;border:none;border-radius:var(--rss);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;letter-spacing:.01em}
+.act-btn.full{grid-column:span 2}
+.act-btn.pri{background:var(--G);color:#fff}
+.act-btn.pri:hover{background:var(--G2);box-shadow:0 4px 14px rgba(28,56,41,.3)}
+.act-btn.sec{background:#fff;color:var(--txt);border:1.5px solid var(--bdr);box-shadow:var(--shadow)}
+.act-btn.sec:hover{border-color:var(--G);color:var(--G)}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#111;color:#fff;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:999;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* PAY CHIP used in bill */
+.pay-chip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);letter-spacing:.02em}
+
+@media print{
+  .hdr,.lc,.act-row,.tbar,.bill-outer>.bill-empty{display:none!important}
+  .wrap{display:block!important;padding:0!important}
+  .rc{position:static!important}
+  .bill-outer{box-shadow:none!important;border-radius:0!important;margin:0!important}
+  body{background:#fff!important}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo">Forex<span>Bill</span></div>
+  <div class="tab-grp">
+    <button class="tab-btn on" id="tbSale"       onclick="switchType('sale')">Sale</button>
+    <button class="tab-btn"   id="tbEnc"          onclick="switchType('encashment')">Encashment</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- LEFT INPUT PANEL -->
+  <div class="lc">
+    <!-- Service Charge -->
+    <div class="sc">
+      <div class="sc-lbl">Service Charges</div>
+      <div class="svc-row">
+        <span class="svc-lbl">Service Charge (₹)</span>
+        <input class="svc-inp" id="inpSC" type="number" value="250" min="0" oninput="onSC(this.value)">
+      </div>
+      <div class="svc-row">
+        <span class="svc-lbl">Service Tax @ 18%</span>
+        <span class="svc-val" id="lblSCT">₹45.00</span>
+      </div>
+      <div class="svc-footer">
+        <span class="lbl">Total Service Charges</span>
+        <span class="val" id="lblSCTotal">₹295.00</span>
+      </div>
+    </div>
+
+    <!-- Currency rows injected here -->
+    <div id="crContainer"></div>
+
+    <button class="add-btn" onclick="addRow()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Add Currency
+    </button>
+  </div>
+
+  <!-- RIGHT BILL PANEL -->
+  <div class="rc">
+    <div class="bill-outer" id="billOuter">
+      <div id="billInner">
+        <div class="bill-empty">
+          <span class="bill-empty-ico">🧾</span>
+          <p>Enter a rate and amount<br>to generate your bill</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbar" id="tbar" style="display:none"></div>
+
+    <div class="act-row">
+      <button class="act-btn pri full" onclick="copyImg()">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="white" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Copy Bill Image
+      </button>
+      <button class="act-btn sec" onclick="copyTxt()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h8M2 10h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Copy Text
+      </button>
+      <button class="act-btn sec" onclick="doPrint()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="5" width="10" height="6" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 5V2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V5M4 9h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Print
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- OFFSCREEN RENDER TARGET FOR SCREENSHOT -->
+<div id="snapTarget" style="position:fixed;left:-9999px;top:0;width:500px;background:#fff;z-index:-1;font-family:'DM Sans',sans-serif"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════ DATA ══════════════
+const CURRENCIES=[
+  {code:'USD',name:'US Dollar',flag:'🇺🇸',dec:2},
+  {code:'EUR',name:'Euro',flag:'🇪🇺',dec:2},
+  {code:'GBP',name:'British Pound',flag:'🇬🇧',dec:2},
+  {code:'AED',name:'UAE Dirham',flag:'🇦🇪',dec:2},
+  {code:'SGD',name:'Singapore Dollar',flag:'🇸🇬',dec:2},
+  {code:'THB',name:'Thai Baht',flag:'🇹🇭',dec:0},
+  {code:'MYR',name:'Malaysian Ringgit',flag:'🇲🇾',dec:2},
+  {code:'JPY',name:'Japanese Yen',flag:'🇯🇵',dec:0},
+  {code:'IDR',name:'Indonesian Rupiah',flag:'🇮🇩',dec:0},
+  {code:'VND',name:'Vietnamese Dong',flag:'🇻🇳',dec:0},
+  {code:'KRW',name:'South Korean Won',flag:'🇰🇷',dec:0},
+  {code:'CAD',name:'Canadian Dollar',flag:'🇨🇦',dec:2},
+  {code:'AUD',name:'Australian Dollar',flag:'🇦🇺',dec:2},
+  {code:'SAR',name:'Saudi Riyal',flag:'🇸🇦',dec:2},
+  {code:'LKR',name:'Sri Lankan Rupee',flag:'🇱🇰',dec:0},
+  {code:'CNY',name:'Chinese Yuan',flag:'🇨🇳',dec:2},
+  {code:'BHD',name:'Bahraini Dinar',flag:'🇧🇭',dec:3},
+  {code:'OMR',name:'Omani Rial',flag:'🇴🇲',dec:3},
+  {code:'CHF',name:'Swiss Franc',flag:'🇨🇭',dec:2},
+  {code:'NZD',name:'New Zealand Dollar',flag:'🇳🇿',dec:2},
+];
+const SNAP={USD:5,EUR:10,GBP:5,AED:10,SGD:5,THB:50,MYR:5,JPY:1000,IDR:100000,
+  VND:500000,KRW:10000,CAD:5,AUD:5,SAR:10,LKR:500,CNY:10,BHD:1,OMR:1,CHF:5,NZD:5};
+
+// ══════════════ ISOLATED STATE PER TYPE ══════════════
+const ST = {
+  sale:       { rows:[], uid:0, sc:250 },
+  encashment: { rows:[], uid:0, sc:250 }
+};
+let TYPE = 'sale';
+let SC = 250; // shared service charge (could be split per type if desired)
+
+function S(){ return ST[TYPE]; }
+function cinfo(code){ return CURRENCIES.find(c=>c.code===code)||CURRENCIES[0]; }
+
+// ══════════════ TYPE SWITCH ══════════════
+function switchType(t){
+  TYPE=t;
+  document.getElementById('tbSale').classList.toggle('on',t==='sale');
+  document.getElementById('tbEnc').classList.toggle('on',t==='encashment');
+  renderAll();
+  updateBill();
+}
+
+// ══════════════ ROW OPS ══════════════
+function addRow(){
+  const st=S(); st.rows.push({id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency'});
+  renderAll(); updateBill();
+}
+function removeRow(id){
+  S().rows=S().rows.filter(r=>r.id!==id); renderAll(); updateBill();
+}
+function setMode(id,mode){
+  const r=S().rows.find(x=>x.id===id);
+  if(r){r.mode=mode;r.amount='';renderRowEl(r);updateBill();}
+}
+function setCode(id,code){
+  const r=S().rows.find(x=>x.id===id);
+  if(r){r.code=code;renderRowEl(r);updateBill();}
+}
+function setField(id,f,v){
+  const r=S().rows.find(x=>x.id===id);
+  if(r){r[f]=v;updateBill();}
+}
+function applySnap(id,amt){
+  const r=S().rows.find(x=>x.id===id);
+  if(!r)return;
+  r.amount=String(amt);r.mode='currency';renderRowEl(r);updateBill();
+}
+
+// ══════════════ SERVICE CHARGE ══════════════
+function onSC(v){
+  SC=parseFloat(v)||0;
+  const t=SC*0.18;
+  document.getElementById('lblSCT').textContent='₹'+fn(t);
+  document.getElementById('lblSCTotal').textContent='₹'+fn(SC+t);
+  updateBill();
+}
+
+// ══════════════ CALC ══════════════
+function slabGST(inr){
+  if(inr<=0)return 0;
+  if(inr<=25000)return 45;
+  let g=45;
+  if(inr<=100000)return g+(inr-25000)*0.0018;
+  g+=(100000-25000)*0.0018;
+  if(inr<=1000000)return g+(inr-100000)*0.0009;
+  g+=(1000000-100000)*0.0009;
+  return g+(inr-1000000)*0.0009;
+}
+function calcRowData(r){
+  const rate=parseFloat(r.rate)||0, amt=parseFloat(r.amount)||0;
+  let forexINR=0,currAmt=0;
+  if(r.mode==='inr'){forexINR=amt;currAmt=rate>0?amt/rate:0;}
+  else{currAmt=amt;forexINR=amt*rate;}
+  return{forexINR,currAmt,rate};
+}
+function calcAll(){
+  const scGst=Math.round(SC*0.18*100)/100;
+  let totalFX=0;
+  const computed=S().rows.map(r=>{const c=calcRowData(r);totalFX+=c.forexINR;return{...r,...c};});
+  const slab=slabGST(totalFX);
+  const total=TYPE==='sale'
+    ?totalFX+slab+SC+scGst
+    :totalFX-slab-SC-scGst;
+  const pmodes=total<50000?['Cash','UPI','Bank Transfer']:total<100000?['UPI','Bank Transfer']:['Bank Transfer'];
+  return{computed,totalFX,slab,sc:SC,scGst,total,pmodes};
+}
+
+// ══════════════ RENDER ROWS ══════════════
+function renderAll(){
+  const c=document.getElementById('crContainer');
+  c.innerHTML='';
+  S().rows.forEach(r=>{const d=document.createElement('div');d.id='row-'+r.id;d.innerHTML=buildRow(r);c.appendChild(d);});
+}
+function renderRowEl(r){
+  const el=document.getElementById('row-'+r.id);
+  if(el)el.innerHTML=buildRow(r);
+}
+function buildRow(r){
+  const isSale=TYPE==='sale', isINR=isSale&&r.mode==='inr';
+  const idx=S().rows.findIndex(x=>x.id===r.id)+1;
+  const info=cinfo(r.code);
+  const rate=parseFloat(r.rate)||0,amt=parseFloat(r.amount)||0;
+  let currAmt=0,forexINR=0;
+  if(isINR){forexINR=amt;currAmt=rate>0?amt/rate:0;}
+  else{currAmt=amt;forexINR=amt*rate;}
+
+  // Denom suggestion
+  let dh='';
+  if(currAmt>0&&rate>0){
+    const unit=SNAP[r.code]||1;
+    if(unit>1){
+      const fl=Math.floor(currAmt/unit)*unit, ce=Math.ceil(currAmt/unit)*unit;
+      if(Math.abs(fl-currAmt)>0.001){
+        const fd=(fl-currAmt)*rate,cd=(ce-currAmt)*rate;
+        dh=`<div class="dh">💡 <strong>${fcurr(currAmt,r.code)} ${r.code}</strong> isn't a clean denomination
+          <div class="dh-btns">
+            <button class="dh-btn" onclick="applySnap(${r.id},${fl})">↓ ${fcurr(fl,r.code)} ${r.code} (${fINR(fd)})</button>
+            <button class="dh-btn" onclick="applySnap(${r.id},${ce})">↑ ${fcurr(ce,r.code)} ${r.code} (+${fINR(Math.abs(cd))})</button>
+          </div></div>`;
+      }
+    }
+  }
+
+  // Result chip
+  let res='';
+  if(amt>0&&rate>0){
+    res=isINR
+      ?`<div class="cr-result"><span class="cr-rl">Customer gets</span><span class="cr-rv">${fcurr(currAmt,r.code)} ${r.code}</span></div>`
+      :`<div class="cr-result"><span class="cr-rl">INR Value</span><span class="cr-rv">${fINR(forexINR)}</span></div>`;
+  }
+
+  const opts=CURRENCIES.map(c=>`<option value="${c.code}"${c.code===r.code?' selected':''}>${c.flag} ${c.code} — ${c.name}</option>`).join('');
+  const modeBar=isSale?`<div class="mode-bar">
+    <button class="mode-btn${r.mode==='currency'?' on':''}" onclick="setMode(${r.id},'currency')">By Currency Amount</button>
+    <button class="mode-btn${r.mode==='inr'?' on':''}" onclick="setMode(${r.id},'inr')">By INR Budget</button>
+  </div>`:'';
+
+  return`<div class="cr">
+    <div class="cr-top">
+      <span class="cr-idx">Currency ${idx}</span>
+      <span class="cr-tag">${info.flag} ${r.code}</span>
+      ${S().rows.length>1?`<button class="cr-del" onclick="removeRow(${r.id})">✕</button>`:''}
+    </div>
+    <div class="cr-grid">
+      <div class="inp-g">
+        <label class="inp-lbl">Currency</label>
+        <select class="sel" onchange="setCode(${r.id},this.value)">${opts}</select>
+      </div>
+      <div class="inp-g">
+        <label class="inp-lbl">Rate (₹ per 1 ${r.code})</label>
+        <div class="pfx-wrap">
+          <span class="pfx-sym">₹</span>
+          <input class="inp pfx" type="number" placeholder="0.00000" value="${r.rate}" oninput="setField(${r.id},'rate',this.value)" step="0.00001">
+        </div>
+      </div>
+    </div>
+    ${modeBar}
+    <div class="inp-g" style="margin-top:12px">
+      <label class="inp-lbl">${isINR?'INR Budget (₹ forex value)':`Amount (${r.code})`}</label>
+      <div class="pfx-wrap">
+        ${isINR?'<span class="pfx-sym">₹</span>':''}
+        <input class="inp${isINR?' pfx':''}" type="number" placeholder="0" value="${r.amount}" oninput="setField(${r.id},'amount',this.value)">
+      </div>
+    </div>
+    ${res}${dh}
+  </div>`;
+}
+
+// ══════════════ BILL HTML BUILDER ══════════════
+function nowStr(){
+  const d=new Date();
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+', '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+
+function billHTML(data,inline){
+  // inline=true: uses CSS classes from page; inline=false: fully self-contained for print/snap
+  const {computed,totalFX,slab,sc,scGst,total,pmodes}=data;
+  const active=computed.filter(r=>r.forexINR>0);
+  const slabR=Math.round(slab),scGstR=Math.round(scGst),totalR=Math.round(total);
+  const typeLabel=TYPE==='sale'?'SALE':'ENCASHMENT';
+  const totalLabel=TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE';
+
+  const tRows=active.map(r=>{
+    const rv=parseFloat(r.rate)||0;
+    const rd=rv<0.01?5:rv<1?4:2;
+    const fi=cinfo(r.code);
+    return`<tr>
+      <td style="padding:10px 6px;border-bottom:1px solid #F0F4F1;font-size:13px">
+        <span style="font-weight:700;color:#1C3829">${fi.flag} ${r.code}</span>
+      </td>
+      <td style="padding:10px 6px;border-bottom:1px solid #F0F4F1;font-size:13px">${fcurr(r.currAmt,r.code)}</td>
+      <td style="padding:10px 6px;border-bottom:1px solid #F0F4F1;font-size:13px">₹${rv.toFixed(rd)}</td>
+      <td style="padding:10px 6px;border-bottom:1px solid #F0F4F1;font-size:13px;text-align:right"><strong>${fINR(r.forexINR)}</strong></td>
+    </tr>`;
+  }).join('');
+
+  const sub=active.length>1?`<tr>
+    <td colspan="3" style="padding:10px 6px 6px;font-weight:700;border-top:2px solid #1C3829;font-size:13px">Subtotal</td>
+    <td style="padding:10px 6px 6px;text-align:right;font-weight:700;border-top:2px solid #1C3829;font-size:13px">${fINR(totalFX)}</td>
+  </tr>`:'';
+
+  const chips=pmodes.map(m=>`<span style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);letter-spacing:.02em;display:inline-block">${m}</span>`).join('');
+
+  return`<div style="font-family:'DM Sans',DM Sans,sans-serif;background:#fff">
+  <!-- HEAD -->
+  <div style="background:#1C3829;padding:26px 28px 22px;text-align:center">
+    <div style="font-family:'Playfair Display',Playfair Display,serif;font-size:28px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:3px">ForexBill</div>
+    <div style="font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.4);text-transform:uppercase">Foreign Exchange Transaction</div>
+    <div style="display:inline-block;margin-top:12px;padding:4px 18px;border:1px solid rgba(255,255,255,.22);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.12em;color:#fff;background:rgba(255,255,255,.1)">${typeLabel}</div>
+  </div>
+  <!-- BODY -->
+  <div style="padding:22px 28px">
+    <div style="font-size:11px;color:#9AA8A0;text-align:right;margin-bottom:18px">${nowStr()}</div>
+    <!-- Currencies label -->
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9AA8A0;padding-bottom:7px;border-bottom:1px solid #E2E8E4;margin-bottom:0">Currencies</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+      <thead><tr>
+        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9AA8A0;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Currency</th>
+        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9AA8A0;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Amount</th>
+        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9AA8A0;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Rate</th>
+        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9AA8A0;padding:8px 6px 6px;text-align:right;border-bottom:1px solid #E2E8E4">INR</th>
+      </tr></thead>
+      <tbody>${tRows}${sub}</tbody>
+    </table>
+    <!-- Charges label -->
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9AA8A0;padding-bottom:7px;border-bottom:1px solid #E2E8E4;margin-bottom:0">Charges</div>
+    <div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#4A5568">Goods &amp; Service Tax (Slabwise)</span><span style="font-weight:600">${fINR(slabR)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#4A5568">Service Charges</span><span style="font-weight:600">${fINR(sc)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:13px"><span style="color:#4A5568">Service Tax @ 18%</span><span style="font-weight:600">${fINR(scGstR)}</span></div>
+    </div>
+  </div>
+  <!-- TOTAL -->
+  <div style="background:#1C3829;padding:18px 28px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.07em">${totalLabel}</span>
+      <span style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#fff">${fINR(totalR)}</span>
+    </div>
+  </div>
+  <!-- PAYMENT -->
+  <div style="background:#1C3829;padding:0 28px 20px">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.38);margin-bottom:9px">Accepted Payment Methods</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">${chips}</div>
+  </div>
+</div>`;
+}
+
+// ══════════════ UPDATE LIVE BILL ══════════════
+function updateBill(){
+  const inner=document.getElementById('billInner');
+  const tbar=document.getElementById('tbar');
+  const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(!has){
+    inner.innerHTML=`<div class="bill-empty"><span class="bill-empty-ico">🧾</span><p>Enter a rate and amount<br>to generate your bill</p></div>`;
+    tbar.style.display='none';
+    return;
+  }
+  const data=calcAll();
+  inner.innerHTML=billHTML(data,true);
+
+  const totalR=Math.round(data.total);
+  if(TYPE==='sale'){
+    tbar.style.display='flex';
+    if(totalR<50000){tbar.className='tbar ok';tbar.textContent='✓ Under ₹50,000 — All payment methods available';}
+    else if(totalR<100000){tbar.className='tbar warn';tbar.textContent=`⚠ ₹${fn(totalR-50000)} over ₹50,000 — Cash not allowed`;}
+    else{tbar.className='tbar warn';tbar.textContent='⚠ Over ₹1,00,000 — Bank Transfer only';}
+  } else { tbar.style.display='none'; }
+}
+
+// ══════════════ COPY AS IMAGE ══════════════
+async function copyImg(){
+  const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(!has){toast('Generate a bill first');return;}
+
+  if(typeof html2canvas==='undefined'){toast('Image library loading… try again');return;}
+
+  const data=calcAll();
+  const snap=document.getElementById('snapTarget');
+  snap.innerHTML=billHTML(data,false);
+
+  // Allow render + font load
+  await new Promise(r=>setTimeout(r,120));
+
+  try{
+    const canvas=await html2canvas(snap,{
+      scale:3,
+      useCORS:true,
+      allowTaint:true,
+      backgroundColor:'#ffffff',
+      logging:false,
+      width:500,
+      windowWidth:500,
+      onclone:(doc)=>{
+        const el=doc.getElementById('snapTarget');
+        if(el){el.style.position='static';el.style.left='0';el.style.top='0';}
+      }
+    });
+    canvas.toBlob(async blob=>{
+      if(!blob){toast('Capture failed');return;}
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+        toast('✓ Bill copied — paste in WhatsApp!');
+      } catch(err){
+        // Fallback: download PNG
+        const a=document.createElement('a');
+        a.download='forex-bill-'+Date.now()+'.png';
+        a.href=URL.createObjectURL(blob);
+        a.click();
+        setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+        toast('Saved as PNG (clipboard requires HTTPS)');
+      }
+    },'image/png');
+  } catch(e){
+    toast('Screenshot failed — use Print instead');
+    console.error('html2canvas error:',e);
+  }
+}
+
+// ══════════════ COPY TEXT ══════════════
+function copyTxt(){
+  const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(!has){toast('Generate a bill first');return;}
+  const d=calcAll();
+  const slabR=Math.round(d.slab),scGstR=Math.round(d.scGst),totalR=Math.round(d.total);
+  const typeLabel=TYPE==='sale'?'SALE':'ENCASHMENT';
+  const totalLabel=TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE';
+  const lines=d.computed.filter(r=>r.forexINR>0).map(r=>{
+    const rv=parseFloat(r.rate)||0;const rd=rv<0.01?5:rv<1?4:2;
+    const fi=cinfo(r.code);
+    return`  ${fi.flag} ${r.code}  ${fcurr(r.currAmt,r.code)} × ₹${rv.toFixed(rd)} = ${fINR(r.forexINR)}`;
+  }).join('\n');
+  const subLine=d.computed.filter(r=>r.forexINR>0).length>1?`\n  Subtotal  ${fINR(d.totalFX)}`:'';
+  const txt=`━━━━━━━━━━━━━━━━━━━━━\nForexBill — ${typeLabel}\n━━━━━━━━━━━━━━━━━━━━━\n${nowStr()}\n\nCURRENCIES:\n${lines}${subLine}\n\nCHARGES:\n  G&S Tax (Slabwise)  ${fINR(slabR)}\n  Service Charges     ${fINR(d.sc)}\n  Service Tax (18%)   ${fINR(scGstR)}\n━━━━━━━━━━━━━━━━━━━━━\n${totalLabel}: ${fINR(totalR)}\nPayment: ${d.pmodes.join(' | ')}`;
+  navigator.clipboard.writeText(txt).then(()=>toast('✓ Text copied')).catch(()=>toast('Copy not available'));
+}
+
+// ══════════════ PRINT ══════════════
+function doPrint(){
+  const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(!has){toast('Generate a bill first');return;}
+  const data=calcAll();
+  const content=billHTML(data,false);
+  const win=window.open('','_blank','width=580,height=750,menubar=no,toolbar=no');
+  if(!win){toast('Allow pop-ups for print');return;}
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>ForexBill</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{background:#fff;font-family:'DM Sans',sans-serif;width:100%}
+      @media print{body{margin:0}}
+    </style>
+  </head><body>${content}
+  <script>
+    document.fonts.ready.then(()=>{
+      setTimeout(()=>{window.print();},400);
+    });
+  <\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+// ══════════════ TOAST ══════════════
+let toastTimer;
+function toast(msg){
+  clearTimeout(toastTimer);
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ══════════════ FORMAT ══════════════
+function fn(n,d=2){return Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fINR(n){return'₹'+fn(n);}
+function fcurr(n,code){const i=CURRENCIES.find(c=>c.code===code)||{dec:2};return n.toLocaleString('en-IN',{maximumFractionDigits:i.dec,minimumFractionDigits:0});}
+
+// ══════════════ INIT ══════════════
+// Load html2canvas
+(function(){
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  s.onerror=()=>console.warn('html2canvas failed to load');
+  document.head.appendChild(s);
+})();
+
+onSC(250);
+addRow();
+</script>
+</body>
+</html>
