@@ -122,6 +122,25 @@ select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-i
 /* PAY CHIP used in bill */
 .pay-chip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);letter-spacing:.02em}
 
+/* SEARCHABLE CURRENCY DROPDOWN */
+.curr-picker{position:relative}
+.curr-display{width:100%;padding:9px 34px 9px 12px;border:1.5px solid var(--bdr);border-radius:var(--rss);font-size:13px;font-weight:500;font-family:inherit;color:var(--txt);background:#fff;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;outline:none;transition:border-color .18s;white-space:nowrap;overflow:hidden}
+.curr-display:hover,.curr-display.open{border-color:var(--G)}
+.curr-display .cd-arrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--txt3);transition:transform .18s}
+.curr-display.open .cd-arrow{transform:translateY(-50%) rotate(180deg)}
+.curr-flag{font-size:15px;line-height:1;flex-shrink:0}
+.curr-flag-fb{width:20px;height:14px;border-radius:2px;background:var(--G);color:#fff;font-size:9px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;letter-spacing:0;flex-shrink:0}
+.curr-drop{position:absolute;top:calc(100% + 5px);left:0;right:0;background:#fff;border:1.5px solid var(--G);border-radius:var(--rs);box-shadow:0 8px 28px rgba(0,0,0,.14);z-index:300;overflow:hidden}
+.curr-search{width:100%;padding:9px 12px;border:none;border-bottom:1px solid var(--bdr);font-size:13px;font-family:inherit;outline:none;color:var(--txt);background:#fff}
+.curr-search::placeholder{color:var(--txt3)}
+.curr-list{max-height:200px;overflow-y:auto;overscroll-behavior:contain}
+.curr-opt{padding:9px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--txt);transition:background .12s}
+.curr-opt:hover,.curr-opt.focused{background:var(--Gp)}
+.curr-opt.selected{background:var(--Gp);font-weight:600;color:var(--G)}
+.curr-opt-code{font-weight:700;min-width:36px;color:var(--G)}
+.curr-opt-name{color:var(--txt2);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.curr-no-results{padding:12px;font-size:12px;color:var(--txt3);text-align:center}
+
 @media print{
   .hdr,.lc,.act-row,.tbar,.bill-outer>.bill-empty{display:none!important}
   .wrap{display:block!important;padding:0!important}
@@ -270,7 +289,12 @@ function setMode(id,mode){
 }
 function setCode(id,code){
   const r=S().rows.find(x=>x.id===id);
-  if(r){r.code=code;renderRowEl(r);updateRowHints(r);updateBill();}
+  if(!r)return;
+  r.code=code;
+  // Full row re-render needed (rate label changes, picker display changes)
+  renderRowEl(r);
+  updateRowHints(r);
+  updateBill();
 }
 function setField(id,f,v){
   const r=S().rows.find(x=>x.id===id);
@@ -380,8 +404,8 @@ function buildRow(r){
   const isSale=TYPE==='sale', isINR=isSale&&r.mode==='inr';
   const idx=S().rows.findIndex(x=>x.id===r.id)+1;
   const info=cinfo(r.code);
+  const flagEl=flagHTML(info.flag,info.code);
 
-  const opts=CURRENCIES.map(c=>`<option value="${c.code}"${c.code===r.code?' selected':''}>${c.flag} ${c.code} — ${c.name}</option>`).join('');
   const modeBar=isSale?`<div class="mode-bar">
     <button class="mode-btn${r.mode==='currency'?' on':''}" onclick="setMode(${r.id},'currency')">By Currency Amount</button>
     <button class="mode-btn${r.mode==='inr'?' on':''}" onclick="setMode(${r.id},'inr')">By INR Budget</button>
@@ -390,13 +414,13 @@ function buildRow(r){
   return`<div class="cr">
     <div class="cr-top">
       <span class="cr-idx">Currency ${idx}</span>
-      <span class="cr-tag">${info.flag} ${r.code}</span>
+      <span class="cr-tag">${flagEl} ${r.code}</span>
       ${S().rows.length>1?`<button class="cr-del" onclick="removeRow(${r.id})">✕</button>`:''}
     </div>
     <div class="cr-grid">
       <div class="inp-g">
         <label class="inp-lbl">Currency</label>
-        <select class="sel" onchange="setCode(${r.id},this.value)">${opts}</select>
+        ${buildPicker(r.id, r.code)}
       </div>
       <div class="inp-g">
         <label class="inp-lbl">Rate (₹ per 1 ${r.code})</label>
@@ -418,6 +442,110 @@ function buildRow(r){
   </div>`;
 }
 
+// ── Flag helper: emoji with graceful fallback ──
+function flagHTML(emoji, code){
+  // Two-letter ISO code from currency code (first two chars if country-mapped)
+  const iso2 = code.slice(0,2);
+  return `<span class="curr-flag" aria-hidden="true">${emoji}</span>`;
+}
+
+// ── Custom searchable picker ──
+function buildPicker(rowId, selectedCode){
+  const info=cinfo(selectedCode);
+  const flagEl=flagHTML(info.flag, info.code);
+  return`<div class="curr-picker" id="picker-${rowId}">
+    <button type="button" class="curr-display" id="pdisp-${rowId}" onclick="togglePicker(${rowId})" aria-haspopup="listbox">
+      ${flagEl}
+      <span style="font-weight:600;color:var(--G)">${selectedCode}</span>
+      <span style="color:var(--txt2);font-size:12px;flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis">${info.name}</span>
+      <svg class="cd-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </div>`;
+}
+
+let openPickerId = null;
+function togglePicker(rowId){
+  if(openPickerId !== null && openPickerId !== rowId){ closePicker(openPickerId); }
+  if(openPickerId === rowId){ closePicker(rowId); return; }
+  openPickerId = rowId;
+  const btn = document.getElementById('pdisp-'+rowId);
+  btn.classList.add('open');
+  const picker = document.getElementById('picker-'+rowId);
+  const r = S().rows.find(x=>x.id===rowId);
+  const sel = r ? r.code : 'USD';
+  const dropHTML = buildDropdown(rowId, sel);
+  const drop = document.createElement('div');
+  drop.className='curr-drop'; drop.id='pdrop-'+rowId;
+  drop.innerHTML=dropHTML;
+  picker.appendChild(drop);
+  const inp = drop.querySelector('.curr-search');
+  if(inp){ inp.focus(); inp.addEventListener('input',()=>filterPicker(rowId,inp.value)); inp.addEventListener('keydown',(e)=>pickerKey(e,rowId)); }
+}
+
+function buildDropdown(rowId, selectedCode, filter=''){
+  const matches = CURRENCIES.filter(c=>
+    !filter || c.code.toLowerCase().includes(filter.toLowerCase()) || c.name.toLowerCase().includes(filter.toLowerCase())
+  );
+  const opts = matches.length === 0
+    ? `<div class="curr-no-results">No currencies found</div>`
+    : matches.map(c=>`<div class="curr-opt${c.code===selectedCode?' selected':''}" onclick="pickerSelect(${rowId},'${c.code}')" data-code="${c.code}">
+        <span class="curr-flag">${c.flag}</span>
+        <span class="curr-opt-code">${c.code}</span>
+        <span class="curr-opt-name">${c.name}</span>
+      </div>`).join('');
+  return`<input class="curr-search" placeholder="Search currency…" value="${filter}" autocomplete="off" spellcheck="false">
+    <div class="curr-list">${opts}</div>`;
+}
+
+function filterPicker(rowId, val){
+  const r = S().rows.find(x=>x.id===rowId);
+  const sel = r ? r.code : 'USD';
+  const drop = document.getElementById('pdrop-'+rowId);
+  if(!drop) return;
+  const list = drop.querySelector('.curr-list');
+  const matches = CURRENCIES.filter(c=>
+    !val || c.code.toLowerCase().includes(val.toLowerCase()) || c.name.toLowerCase().includes(val.toLowerCase())
+  );
+  list.innerHTML = matches.length === 0
+    ? `<div class="curr-no-results">No currencies found</div>`
+    : matches.map(c=>`<div class="curr-opt${c.code===sel?' selected':''}" onclick="pickerSelect(${rowId},'${c.code}')" data-code="${c.code}">
+        <span class="curr-flag">${c.flag}</span>
+        <span class="curr-opt-code">${c.code}</span>
+        <span class="curr-opt-name">${c.name}</span>
+      </div>`).join('');
+}
+
+function pickerKey(e, rowId){
+  if(e.key==='Escape'){ closePicker(rowId); }
+  if(e.key==='Enter'){
+    const drop=document.getElementById('pdrop-'+rowId);
+    if(!drop)return;
+    const first=drop.querySelector('.curr-opt');
+    if(first){ pickerSelect(rowId, first.dataset.code); }
+  }
+}
+
+function pickerSelect(rowId, code){
+  closePicker(rowId);
+  setCode(rowId, code);
+}
+
+function closePicker(rowId){
+  if(rowId===null)return;
+  const btn=document.getElementById('pdisp-'+rowId);
+  if(btn)btn.classList.remove('open');
+  const drop=document.getElementById('pdrop-'+rowId);
+  if(drop)drop.remove();
+  if(openPickerId===rowId) openPickerId=null;
+}
+
+// Close picker when clicking outside
+document.addEventListener('click', e=>{
+  if(openPickerId===null)return;
+  const picker=document.getElementById('picker-'+openPickerId);
+  if(picker&&!picker.contains(e.target)){ closePicker(openPickerId); }
+}, true);
+
 // ══════════════ BILL HTML BUILDER ══════════════
 function nowStr(){
   const d=new Date();
@@ -436,13 +564,15 @@ function billHTML(data,inline){
     const rv=parseFloat(r.rate)||0;
     const rd=rv<0.01?5:rv<1?4:2;
     const fi=cinfo(r.code);
+    // Flag fallback: show code badge if flag might not render (flag is emoji, code always renders)
+    const flagPart=`<span style="font-size:15px;line-height:1;margin-right:4px">${fi.flag}</span>`;
     return`<tr>
-      <td style="padding:10px 6px;border-bottom:1px solid #F0F4F1;font-size:13px">
-        <span style="font-weight:700;color:#1C3829">${fi.flag} ${r.code}</span>
+      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px">
+        <span style="font-weight:700;color:#1C3829;display:inline-flex;align-items:center;gap:4px">${flagPart}<span>${r.code}</span></span>
       </td>
-      <td style="padding:10px 6px;border-bottom:1px solid #F0F4F1;font-size:13px">${fcurr(r.currAmt,r.code)}</td>
-      <td style="padding:10px 6px;border-bottom:1px solid #F0F4F1;font-size:13px">₹${rv.toFixed(rd)}</td>
-      <td style="padding:10px 6px;border-bottom:1px solid #F0F4F1;font-size:13px;text-align:right"><strong>${fINR(r.forexINR)}</strong></td>
+      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;color:#1A202C;font-weight:500">${fcurr(r.currAmt,r.code)}</td>
+      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;color:#1A202C;font-weight:500">₹${rv.toFixed(rd)}</td>
+      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;text-align:right;font-weight:700;color:#0F1611">${fINR(r.forexINR)}</td>
     </tr>`;
   }).join('');
 
@@ -457,36 +587,36 @@ function billHTML(data,inline){
   <!-- HEAD -->
   <div style="background:#1C3829;padding:26px 28px 22px;text-align:center">
     <div style="font-family:'Playfair Display',Playfair Display,serif;font-size:28px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:3px">ForexBill</div>
-    <div style="font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.4);text-transform:uppercase">Matrix Forex</div>
+    <div style="font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.4);text-transform:uppercase">Foreign Exchange Transaction</div>
     <div style="display:inline-block;margin-top:12px;padding:4px 18px;border:1px solid rgba(255,255,255,.22);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.12em;color:#fff;background:rgba(255,255,255,.1)">${typeLabel}</div>
   </div>
   <!-- BODY -->
   <div style="padding:22px 28px">
-    <div style="font-size:11px;color:#9AA8A0;text-align:right;margin-bottom:18px">${nowStr()}</div>
+    <div style="font-size:11px;color:#6B7A72;text-align:right;margin-bottom:18px">${nowStr()}</div>
     <!-- Currencies label -->
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9AA8A0;padding-bottom:7px;border-bottom:1px solid #E2E8E4;margin-bottom:0">Currencies</div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6B7A72;padding-bottom:7px;border-bottom:1px solid #E2E8E4;margin-bottom:0">Currencies</div>
     <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
       <thead><tr>
-        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9AA8A0;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Currency</th>
-        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9AA8A0;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Amount</th>
-        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9AA8A0;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Rate</th>
-        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9AA8A0;padding:8px 6px 6px;text-align:right;border-bottom:1px solid #E2E8E4">INR</th>
+        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A72;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Currency</th>
+        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A72;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Amount</th>
+        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A72;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Rate</th>
+        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A72;padding:8px 6px 6px;text-align:right;border-bottom:1px solid #E2E8E4">INR</th>
       </tr></thead>
       <tbody>${tRows}${sub}</tbody>
     </table>
     <!-- Charges label -->
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9AA8A0;padding-bottom:7px;border-bottom:1px solid #E2E8E4;margin-bottom:0">Charges</div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6B7A72;padding-bottom:7px;border-bottom:1px solid #E2E8E4;margin-bottom:0">Charges</div>
     <div style="margin-bottom:18px">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#4A5568">Goods &amp; Service Tax (Slabwise)</span><span style="font-weight:600">${fINR(slabR)}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#4A5568">Service Charges</span><span style="font-weight:600">${fINR(sc)}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:13px"><span style="color:#4A5568">Service Tax @ 18%</span><span style="font-weight:600">${fINR(scGstR)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#2D3748">Goods &amp; Service Tax (Slabwise)</span><span style="font-weight:600;color:#0F1611">${fINR(slabR)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#2D3748">Service Charges</span><span style="font-weight:600;color:#0F1611">${fINR(sc)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:13px"><span style="color:#2D3748">Service Tax @ 18%</span><span style="font-weight:600;color:#0F1611">${fINR(scGstR)}</span></div>
     </div>
   </div>
   <!-- TOTAL -->
   <div style="background:#1C3829;padding:18px 28px">
     <div style="display:flex;align-items:baseline;justify-content:space-between">
       <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.07em">${totalLabel}</span>
-      <span style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:#fff">${fINR(totalR)}</span>
+      <span style="font-family:'DM Sans',sans-serif;font-size:34px;font-weight:700;color:#fff;letter-spacing:-.5px">${fINR(totalR)}</span>
     </div>
   </div>
   <!-- PAYMENT -->
@@ -597,11 +727,16 @@ function doPrint(){
   win.document.write(`<!DOCTYPE html><html><head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <title>ForexBill</title>
+    <title> </title>
     <style>
       *{box-sizing:border-box;margin:0;padding:0}
       body{background:#fff;font-family:'DM Sans',sans-serif;width:100%}
-      @media print{body{margin:0}}
+      @page{margin:0;size:auto}
+      @media print{
+        body{margin:0;padding:0}
+        a[href]:after{content:none!important}
+        head title{display:none}
+      }
     </style>
   </head><body>${content}
   <script>
