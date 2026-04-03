@@ -103,13 +103,17 @@ select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-i
 .tbar.warn{background:#FFF7ED;color:#92400E;border:1px solid #FED7AA}
 
 /* ACTION BUTTONS */
-.act-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.act-row{display:grid;grid-template-columns:1fr 40px;gap:9px}
 .act-btn{padding:12px 10px;border:none;border-radius:var(--rss);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;letter-spacing:.01em}
 .act-btn.full{grid-column:span 2}
 .act-btn.pri{background:var(--G);color:#fff}
 .act-btn.pri:hover{background:var(--G2);box-shadow:0 4px 14px rgba(28,56,41,.3)}
 .act-btn.sec{background:#fff;color:var(--txt);border:1.5px solid var(--bdr);box-shadow:var(--shadow)}
 .act-btn.sec:hover{border-color:var(--G);color:var(--G)}
+/* Icon-only copy text button */
+.act-btn.icon-btn{width:40px;height:40px;padding:0;border-radius:var(--rss);background:#fff;border:1.5px solid var(--bdr);box-shadow:var(--shadow);color:var(--txt2);flex-shrink:0}
+.act-btn.icon-btn:hover{border-color:var(--G);color:var(--G)}
+.act-btn.icon-btn svg{flex-shrink:0}
 
 /* TOAST */
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#111;color:#fff;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:999;pointer-events:none;white-space:nowrap}
@@ -184,13 +188,12 @@ select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-i
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="white" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
         Copy Bill Image
       </button>
-      <button class="act-btn sec" onclick="copyTxt()">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h8M2 10h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        Copy Text
-      </button>
-      <button class="act-btn sec" onclick="doPrint()">
+      <button class="act-btn sec" onclick="doPrint()" style="grid-column:1">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="5" width="10" height="6" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 5V2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V5M4 9h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
         Print
+      </button>
+      <button class="act-btn icon-btn" onclick="copyTxt()" title="Copy as Text" style="grid-column:2;grid-row:2">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M5 2h5.5A1.5 1.5 0 0 1 12 3.5V11a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 4 11V5l1-3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 5h4M6 7.5h4M6 10h2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
       </button>
     </div>
   </div>
@@ -222,11 +225,16 @@ const CURRENCIES=[
   {code:'CNY',name:'Chinese Yuan',flag:'🇨🇳',dec:2},
   {code:'BHD',name:'Bahraini Dinar',flag:'🇧🇭',dec:3},
   {code:'OMR',name:'Omani Rial',flag:'🇴🇲',dec:3},
+  {code:'QAR',name:'Qatari Riyal',flag:'🇶🇦',dec:2},
   {code:'CHF',name:'Swiss Franc',flag:'🇨🇭',dec:2},
   {code:'NZD',name:'New Zealand Dollar',flag:'🇳🇿',dec:2},
+  {code:'RUB',name:'Russian Ruble',flag:'🇷🇺',dec:0},
+  {code:'DKK',name:'Danish Krone',flag:'🇩🇰',dec:2},
+  {code:'SEK',name:'Swedish Krona',flag:'🇸🇪',dec:2},
 ];
 const SNAP={USD:5,EUR:10,GBP:5,AED:10,SGD:5,THB:50,MYR:5,JPY:1000,IDR:100000,
-  VND:500000,KRW:10000,CAD:5,AUD:5,SAR:10,LKR:500,CNY:10,BHD:1,OMR:1,CHF:5,NZD:5};
+  VND:500000,KRW:10000,CAD:5,AUD:5,SAR:10,LKR:500,CNY:10,BHD:1,OMR:1,QAR:5,
+  CHF:5,NZD:5,RUB:500,DKK:50,SEK:50};
 
 // ══════════════ ISOLATED STATE PER TYPE ══════════════
 const ST = {
@@ -262,11 +270,56 @@ function setMode(id,mode){
 }
 function setCode(id,code){
   const r=S().rows.find(x=>x.id===id);
-  if(r){r.code=code;renderRowEl(r);updateBill();}
+  if(r){r.code=code;renderRowEl(r);updateRowHints(r);updateBill();}
 }
 function setField(id,f,v){
   const r=S().rows.find(x=>x.id===id);
-  if(r){r[f]=v;updateBill();}
+  if(!r)return;
+  r[f]=v;
+  // Re-render denom hint section only when we have enough data to show it
+  const rate=parseFloat(r.rate)||0, amt=parseFloat(r.amount)||0;
+  if(rate>0&&amt>0){
+    // Update just the denom hint + result, not the whole row (preserves input focus)
+    updateRowHints(r);
+  } else {
+    // Clear hints if data removed
+    const hintEl=document.getElementById('hints-'+r.id);
+    if(hintEl) hintEl.innerHTML='';
+  }
+  updateBill();
+}
+
+function updateRowHints(r){
+  const hintEl=document.getElementById('hints-'+r.id);
+  if(!hintEl)return;
+  hintEl.innerHTML=buildHints(r);
+}
+
+function buildHints(r){
+  const isSale=TYPE==='sale', isINR=isSale&&r.mode==='inr';
+  const rate=parseFloat(r.rate)||0, amt=parseFloat(r.amount)||0;
+  let currAmt=0,forexINR=0;
+  if(isINR){forexINR=amt;currAmt=rate>0?amt/rate:0;}
+  else{currAmt=amt;forexINR=amt*rate;}
+  let out='';
+  if(amt>0&&rate>0){
+    out+=isINR
+      ?`<div class="cr-result"><span class="cr-rl">Customer gets</span><span class="cr-rv">${fcurr(currAmt,r.code)} ${r.code}</span></div>`
+      :`<div class="cr-result"><span class="cr-rl">INR Value</span><span class="cr-rv">${fINR(forexINR)}</span></div>`;
+    const unit=SNAP[r.code]||1;
+    if(unit>1&&currAmt>0){
+      const fl=Math.floor(currAmt/unit)*unit, ce=Math.ceil(currAmt/unit)*unit;
+      if(Math.abs(fl-currAmt)>0.001){
+        const fd=(fl-currAmt)*rate, cd=(ce-currAmt)*rate;
+        out+=`<div class="dh">💡 <strong>${fcurr(currAmt,r.code)} ${r.code}</strong> isn't a clean denomination
+          <div class="dh-btns">
+            <button class="dh-btn" onclick="applySnap(${r.id},${fl})">↓ ${fcurr(fl,r.code)} ${r.code} (${fINR(fd)})</button>
+            <button class="dh-btn" onclick="applySnap(${r.id},${ce})">↑ ${fcurr(ce,r.code)} ${r.code} (+${fINR(Math.abs(cd))})</button>
+          </div></div>`;
+      }
+    }
+  }
+  return out;
 }
 function applySnap(id,amt){
   const r=S().rows.find(x=>x.id===id);
@@ -327,35 +380,6 @@ function buildRow(r){
   const isSale=TYPE==='sale', isINR=isSale&&r.mode==='inr';
   const idx=S().rows.findIndex(x=>x.id===r.id)+1;
   const info=cinfo(r.code);
-  const rate=parseFloat(r.rate)||0,amt=parseFloat(r.amount)||0;
-  let currAmt=0,forexINR=0;
-  if(isINR){forexINR=amt;currAmt=rate>0?amt/rate:0;}
-  else{currAmt=amt;forexINR=amt*rate;}
-
-  // Denom suggestion
-  let dh='';
-  if(currAmt>0&&rate>0){
-    const unit=SNAP[r.code]||1;
-    if(unit>1){
-      const fl=Math.floor(currAmt/unit)*unit, ce=Math.ceil(currAmt/unit)*unit;
-      if(Math.abs(fl-currAmt)>0.001){
-        const fd=(fl-currAmt)*rate,cd=(ce-currAmt)*rate;
-        dh=`<div class="dh">💡 <strong>${fcurr(currAmt,r.code)} ${r.code}</strong> isn't a clean denomination
-          <div class="dh-btns">
-            <button class="dh-btn" onclick="applySnap(${r.id},${fl})">↓ ${fcurr(fl,r.code)} ${r.code} (${fINR(fd)})</button>
-            <button class="dh-btn" onclick="applySnap(${r.id},${ce})">↑ ${fcurr(ce,r.code)} ${r.code} (+${fINR(Math.abs(cd))})</button>
-          </div></div>`;
-      }
-    }
-  }
-
-  // Result chip
-  let res='';
-  if(amt>0&&rate>0){
-    res=isINR
-      ?`<div class="cr-result"><span class="cr-rl">Customer gets</span><span class="cr-rv">${fcurr(currAmt,r.code)} ${r.code}</span></div>`
-      :`<div class="cr-result"><span class="cr-rl">INR Value</span><span class="cr-rv">${fINR(forexINR)}</span></div>`;
-  }
 
   const opts=CURRENCIES.map(c=>`<option value="${c.code}"${c.code===r.code?' selected':''}>${c.flag} ${c.code} — ${c.name}</option>`).join('');
   const modeBar=isSale?`<div class="mode-bar">
@@ -390,14 +414,14 @@ function buildRow(r){
         <input class="inp${isINR?' pfx':''}" type="number" placeholder="0" value="${r.amount}" oninput="setField(${r.id},'amount',this.value)">
       </div>
     </div>
-    ${res}${dh}
+    <div id="hints-${r.id}">${buildHints(r)}</div>
   </div>`;
 }
 
 // ══════════════ BILL HTML BUILDER ══════════════
 function nowStr(){
   const d=new Date();
-  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+', '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
 }
 
 function billHTML(data,inline){
@@ -433,7 +457,7 @@ function billHTML(data,inline){
   <!-- HEAD -->
   <div style="background:#1C3829;padding:26px 28px 22px;text-align:center">
     <div style="font-family:'Playfair Display',Playfair Display,serif;font-size:28px;font-weight:700;color:#fff;letter-spacing:-.3px;margin-bottom:3px">ForexBill</div>
-    <div style="font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.4);text-transform:uppercase">Matrix Forex</div>
+    <div style="font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.4);text-transform:uppercase">Foreign Exchange Transaction</div>
     <div style="display:inline-block;margin-top:12px;padding:4px 18px;border:1px solid rgba(255,255,255,.22);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.12em;color:#fff;background:rgba(255,255,255,.1)">${typeLabel}</div>
   </div>
   <!-- BODY -->
