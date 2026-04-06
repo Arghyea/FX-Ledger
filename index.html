@@ -1240,12 +1240,21 @@ function printHTML(data, opts){
 <head>
 <meta charset="UTF-8">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>Matrix Forex — ${typeLabel}</title>
+<title> </title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{
     size:A4 portrait;
-    margin:18mm 16mm 16mm 16mm;
+    margin:0;
+  }
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @media print{
+    html,body{margin:0!important;padding:0!important}
+    a[href]:after{content:none!important}
+    a{text-decoration:none!important}
+    abbr[title]:after{content:none!important}
+    .no-print{display:none!important}
+    /* Suppress any browser-injected header/footer content */
     @top-left{content:none}
     @top-center{content:none}
     @top-right{content:none}
@@ -1253,20 +1262,14 @@ function printHTML(data, opts){
     @bottom-center{content:none}
     @bottom-right{content:none}
   }
-  @media print{
-    body{margin:0}
-    a[href]:after{content:none!important}
-    a{text-decoration:none}
-    .no-print{display:none}
-  }
   body{
     font-family:'DM Sans',Arial,sans-serif;
     font-size:11pt;
     color:#000;
     background:#fff;
-    max-width:170mm;
-    margin:0 auto;
-    padding:12mm 0 0;
+    width:210mm;
+    margin:0;
+    padding:18mm 20mm 16mm 20mm;
   }
 
   /* ── HEADER ── */
@@ -1379,7 +1382,7 @@ function printHTML(data, opts){
   <!-- FOOTER & DISCLAIMER -->
   <div class="p-footer">
     <div class="p-disclaimer">
-      <strong>Proforma Invoice.</strong> This is a Proforma Invoice and is issued for reference purposes only.
+      This is a Proforma Invoice and is issued for reference purposes only.
     </div>
     <div class="p-footer-co">Matrix Forex &nbsp;|&nbsp; Foreign Exchange</div>
   </div>
