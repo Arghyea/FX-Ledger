@@ -1206,7 +1206,7 @@ function printHTML(data, opts){
     const rd=rv<0.01?5:rv<1?4:2;
     const fi=cinfo(r.code);
     return`<tr>
-      <td class="p-td p-curr-name">${fi.code}<span class="p-curr-full"> — ${fi.name}</span></td>
+      <td class="p-td p-curr-name">${fi.flag} ${fi.code}<span class="p-curr-full"> — ${fi.name}</span></td>
       <td class="p-td p-right">${fcurr(r.currAmt,r.code)}</td>
       <td class="p-td p-right">₹${rv.toFixed(rd)}</td>
       <td class="p-td p-right p-bold">${fINR(r.forexINR)}</td>
@@ -1231,7 +1231,6 @@ function printHTML(data, opts){
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>&#8203;</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1246,7 +1245,7 @@ function printHTML(data, opts){
 }
 html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{
-  font-family:'DM Sans',Arial,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
   font-size:10.5pt;
   color:#000;
   background:#fff;
