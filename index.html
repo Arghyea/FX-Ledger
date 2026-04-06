@@ -105,6 +105,14 @@ input[type=number]{-moz-appearance:textfield}
 .tcs-inp{width:100%;padding:8px 12px 8px 22px;border:1.5px solid #D6D3D1;border-radius:var(--rss);font-size:13px;font-weight:600;font-family:inherit;background:#fff;color:var(--txt);outline:none;transition:border-color .18s}
 .tcs-inp:focus{border-color:#78716C}
 .tcs-note{margin-top:10px;padding-top:8px;border-top:1px solid rgba(120,113,108,.12);font-size:11px;color:#A8A29E;line-height:1.5}
+/* Full LRS toggle */
+.tcs-full-lrs-wrap{margin-bottom:12px}
+.tcs-full-lrs-btn{width:100%;text-align:left;background:#F5F5F4;border:1.5px solid #D6D3D1;border-radius:var(--rss);padding:9px 12px;font-family:inherit;font-size:12px;font-weight:600;color:#57534E;cursor:pointer;display:flex;align-items:center;gap:9px;transition:all .18s;line-height:1.4}
+.tcs-full-lrs-btn:hover{border-color:#A8A29E;background:#EEEEEC}
+.tcs-full-lrs-btn.on{background:#1C3829;border-color:#1C3829;color:#fff}
+.tcs-full-lrs-check{width:16px;height:16px;border-radius:4px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;font-weight:700;opacity:.7;transition:all .18s}
+.tcs-full-lrs-btn.on .tcs-full-lrs-check{opacity:1;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.6)}
+.tcs-mode-note{font-size:11px;color:#78716C;margin-bottom:12px;font-weight:500}
 
 /* ── SPLIT MODAL ── */
 .split-overlay{position:fixed;inset:0;background:rgba(15,22,17,.5);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:14px;overflow-y:auto;backdrop-filter:blur(2px)}
@@ -361,7 +369,7 @@ function S(){return ST[TYPE];}
 function cinfo(c){return CURRENCIES.find(x=>x.code===c)||CURRENCIES[0];}
 
 // TCS
-let tcsEnabled=false, tcsType='personal', tcsPrior=0, tcsLoan=0, tcsMode='manual';
+let tcsEnabled=false, tcsType='personal', tcsPrior=0, tcsLoan=0, tcsMode='manual', tcsFullLRS=false;
 const TCS_THR=1000000;
 const TCS_RATES={education:0.02,personal:0.20};
 
@@ -371,7 +379,7 @@ let splitCount=2, splitData=[], splitCustType='indian';
 // ══════════ TYPE SWITCH ══════════
 function switchType(t){
   TYPE=t;
-  if(t==='encashment'){tcsEnabled=false;tcsMode='manual';tcsType='personal';tcsPrior=0;tcsLoan=0;}
+  if(t==='encashment'){tcsEnabled=false;tcsMode='manual';tcsType='personal';tcsPrior=0;tcsLoan=0;tcsFullLRS=false;}
   document.getElementById('tbSale').classList.toggle('on',t==='sale');
   document.getElementById('tbEnc').classList.toggle('on',t==='encashment');
   renderEncCustBar();
@@ -445,6 +453,18 @@ function calcRowData(r){
 }
 function calcTCS(totalFX){
   if(!tcsEnabled||TYPE!=='sale')return{tcsAmount:0,taxableExcess:0,selfFunded:0,selfFundedTaxable:0,loanAmt:0};
+
+  // Fast path: full LRS limit declared — entire bill is taxable
+  if(tcsFullLRS){
+    const rate=TCS_RATES[tcsType];
+    if(tcsType==='education'&&tcsLoan>0){
+      const loan=Math.min(tcsLoan,totalFX);
+      const selfFunded=Math.max(0,totalFX-loan);
+      return{tcsAmount:selfFunded*0.02,taxableExcess:selfFunded,selfFunded,selfFundedTaxable:selfFunded,loanAmt:loan};
+    }
+    return{tcsAmount:totalFX*rate,taxableExcess:totalFX,selfFunded:totalFX,selfFundedTaxable:totalFX,loanAmt:0};
+  }
+
   const running=tcsPrior+totalFX;
   if(running<=TCS_THR)return{tcsAmount:0,taxableExcess:0,selfFunded:0,selfFundedTaxable:0,loanAmt:0};
 
@@ -454,22 +474,13 @@ function calcTCS(totalFX){
   }
 
   // Education: loan portion is 0%, self-funded follows threshold
-  // The ₹10L threshold is shared: loan consumes its portion, remainder is available for self-funded
-  const loan=Math.min(tcsLoan,totalFX);          // can't exceed the total
+  const loan=Math.min(tcsLoan,totalFX);
   const selfFunded=Math.max(0,totalFX-loan);
-
-  // Threshold available at start of this transaction (after prior usage)
   const thresholdAvail=Math.max(0,TCS_THR-tcsPrior);
-
-  // Loan consumes part of the available threshold
   const loanUsesThresh=Math.min(loan,thresholdAvail);
-  // Remaining threshold left for self-funded portion
   const thresholdForSelf=Math.max(0,thresholdAvail-loanUsesThresh);
-
-  // Self-funded: first `thresholdForSelf` is exempt, rest is taxable at 2%
   const selfFundedExempt=Math.min(selfFunded,thresholdForSelf);
   const selfFundedTaxable=Math.max(0,selfFunded-selfFundedExempt);
-
   return{tcsAmount:selfFundedTaxable*0.02,taxableExcess:selfFundedTaxable,selfFunded,selfFundedTaxable,loanAmt:loan};
 }
 function payModes(total){
@@ -622,8 +633,14 @@ document.addEventListener('click',e=>{
 
 // ══════════ TCS ══════════
 function enableTCS(mode){tcsEnabled=true;tcsMode=mode||'manual';renderTCSSection();updateBill();}
-function disableTCS(){tcsEnabled=false;tcsMode='manual';tcsPrior=0;tcsLoan=0;renderTCSSection();updateBill();}
+function disableTCS(){tcsEnabled=false;tcsMode='manual';tcsPrior=0;tcsLoan=0;tcsFullLRS=false;renderTCSSection();updateBill();}
 function setTCSType(t){tcsType=t;if(t!=='education')tcsLoan=0;renderTCSSection();updateBill();}
+function toggleFullLRS(){
+  tcsFullLRS=!tcsFullLRS;
+  if(tcsFullLRS){tcsPrior=0;tcsLoan=0;}  // clear inputs — irrelevant in full mode
+  renderTCSSection();
+  refreshBillOnly();
+}
 function setTCSPrior(v){
   tcsPrior=parseFloat(v)||0;
   // Only update the summary numbers — do NOT rebuild the card (would kill input focus)
@@ -647,6 +664,23 @@ function buildTCSSummaryHTML(){
   const tcsResult=calcTCS(totalFX);
   const {tcsAmount,taxableExcess,selfFunded,selfFundedTaxable,loanAmt}=tcsResult;
   const rate=TCS_RATES[tcsType];
+  const ratePct=(rate*100).toFixed(0);
+
+  // Full LRS fast path — simple display
+  if(tcsFullLRS){
+    if(tcsType==='education'&&tcsLoan>0){
+      return`
+        <div class="tcs-row"><span class="tl">Total Forex</span><span class="tv">${fINR(Math.round(totalFX))}</span></div>
+        <div class="tcs-row"><span class="tl">Loan (0% rate)</span><span class="tv">${fINR(Math.round(loanAmt))}</span></div>
+        <div class="tcs-row"><span class="tl">Self-funded (taxable)</span><span class="tv">${fINR(Math.round(selfFundedTaxable))}</span></div>
+        <div class="tcs-row" style="border-bottom:none"><span class="tl">TCS @ 2%</span><span class="tv big">${fINR(Math.round(tcsAmount))}</span></div>`;
+    }
+    return`
+      <div class="tcs-row"><span class="tl">Full amount taxable</span><span class="tv">${fINR(Math.round(totalFX))}</span></div>
+      <div class="tcs-row" style="border-bottom:none"><span class="tl">TCS @ ${ratePct}%</span><span class="tv big">${fINR(Math.round(tcsAmount))}</span></div>`;
+  }
+
+  // Prior usage / threshold path
   const running=tcsPrior+totalFX;
   if(tcsType==='education'&&tcsLoan>0){
     const thresholdAvail=Math.max(0,TCS_THR-tcsPrior);
@@ -669,7 +703,7 @@ function buildTCSSummaryHTML(){
     <div class="tcs-row"><span class="tl">Running Total</span><span class="tv">${fINR(Math.round(running))}</span></div>`:''}
     ${taxableExcess>0
       ?`<div class="tcs-row"><span class="tl">Taxable Excess (above ₹10L)</span><span class="tv">${fINR(Math.round(taxableExcess))}</span></div>
-         <div class="tcs-row" style="border-bottom:none"><span class="tl">TCS @ ${(rate*100).toFixed(0)}%</span><span class="tv big">${fINR(Math.round(tcsAmount))}</span></div>`
+         <div class="tcs-row" style="border-bottom:none"><span class="tl">TCS @ ${ratePct}%</span><span class="tv big">${fINR(Math.round(tcsAmount))}</span></div>`
       :`<div class="tcs-zero">Running total under ₹10,00,000 — no TCS</div>`}`;
 }
 // Refresh the right-panel bill only (no TCS card rebuild)
@@ -700,9 +734,21 @@ function renderTCSSection(){
   let totalFX=0;
   S().rows.forEach(r=>{const c=calcRowData(r);totalFX+=c.forexINR;});
   const isAuto=tcsMode==='auto';
-  const modeNote=isAuto
-    ?`<div class="tcs-mode-note" style="font-size:11px;color:#78716C;margin-bottom:12px;font-weight:500">Auto-applied — transaction exceeds ₹10,00,000</div>`
-    :`<div class="tcs-mode-note" style="font-size:11px;color:#78716C;margin-bottom:12px;font-weight:500">Manual — applied based on declared prior LRS usage</div>`;
+
+  // Full LRS toggle
+  const fullLRSToggle=`<div class="tcs-full-lrs-wrap">
+    <button class="tcs-full-lrs-btn${tcsFullLRS?' on':''}" onclick="toggleFullLRS()">
+      <span class="tcs-full-lrs-check">${tcsFullLRS?'✓':''}</span>
+      Full LRS limit already used — apply TCS on entire amount
+    </button>
+  </div>`;
+
+  // Mode note (shown only when NOT using full LRS toggle and not auto)
+  const modeNote=(!tcsFullLRS&&!isAuto)
+    ?`<div class="tcs-mode-note">Manual — enter prior LRS usage below if applicable</div>`
+    :(!tcsFullLRS&&isAuto)
+      ?`<div class="tcs-mode-note">Auto-applied — transaction exceeds ₹10,00,000</div>`
+      :'';
 
   const loanField=tcsType==='education'?`
     <div class="tcs-field">
@@ -713,23 +759,28 @@ function renderTCSSection(){
       <div class="tcs-field-note">Loan from a specified institution (Sec. 80E) covers taxable portion at 0%</div>
     </div>`:'';
 
+  // Prior usage field — hidden when full LRS is on
+  const priorField=tcsFullLRS?'':`
+    <div class="tcs-field">
+      <div class="tcs-field-lbl">Prior LRS Usage This FY (₹)</div>
+      <div class="pfx-wrap"><span class="pfx-sym" style="color:#78716C">₹</span>
+        <input class="tcs-inp" type="number" placeholder="0 — leave blank if none" value="${tcsPrior>0?tcsPrior:''}" oninput="setTCSPrior(this.value)">
+      </div>
+    </div>`;
+
   el.innerHTML=`<div class="tcs-card">
     <div class="tcs-header">
       <div class="tcs-title">TCS — LRS</div>
       <button class="tcs-close" onclick="disableTCS()">✕</button>
     </div>
+    ${fullLRSToggle}
     ${modeNote}
     <div class="tcs-type-bar">
       <button class="tcs-type-btn${tcsType==='personal'?' on':''}" onclick="setTCSType('personal')">Personal / Other (20%)</button>
       <button class="tcs-type-btn${tcsType==='education'?' on':''}" onclick="setTCSType('education')">Education (2%)</button>
     </div>
     <div id="tcs-summary">${buildTCSSummaryHTML()}</div>
-    <div class="tcs-field">
-      <div class="tcs-field-lbl">Prior LRS Usage This FY (₹)</div>
-      <div class="pfx-wrap"><span class="pfx-sym" style="color:#78716C">₹</span>
-        <input class="tcs-inp" type="number" placeholder="0 — leave blank if none" value="${tcsPrior>0?tcsPrior:''}" oninput="setTCSPrior(this.value)">
-      </div>
-    </div>
+    ${priorField}
     ${loanField}
     <div class="tcs-note">ℹ️ TCS is an advance tax. Fully refundable when filing ITR. Reflected in Form 26AS.</div>
   </div>`;
