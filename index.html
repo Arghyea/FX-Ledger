@@ -189,9 +189,10 @@ input[type=number]{-moz-appearance:textfield}
 .tbar.warn{background:#FFF7ED;color:#92400E;border:1px solid #FED7AA}
 
 /* ── ACTION BTNS ── */
-.act-row{display:grid;grid-template-columns:1fr 40px 40px;gap:9px}
+.act-row{display:grid;grid-template-columns:1fr 40px 40px 40px;gap:9px}
 .act-btn{padding:12px 10px;border:none;border-radius:var(--rss);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
-.act-btn.full{grid-column:span 3}
+.act-btn.full{grid-column:span 4}
+.act-btn.half{grid-column:span 2}
 .act-btn.pri{background:var(--G);color:#fff}
 .act-btn.pri:hover{background:var(--G2);box-shadow:0 4px 14px rgba(28,56,41,.3)}
 .act-btn.sec{background:#fff;color:var(--txt);border:1.5px solid var(--bdr);box-shadow:var(--shadow)}
@@ -284,15 +285,15 @@ input[type=number]{-moz-appearance:textfield}
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="white" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
         Copy Bill Image
       </button>
-      <button class="act-btn sec" onclick="doPrint()" style="grid-column:1">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="5" width="10" height="6" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 5V2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V5M4 9h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        Print
+      <button class="act-btn sec half" onclick="downloadPDF()" style="grid-column:span 2">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download PDF
       </button>
-      <button class="act-btn ico" onclick="openSplitModal()" title="Split Bill" style="grid-column:2;grid-row:2">
+      <button class="act-btn ico" onclick="downloadPNG()" title="Download PNG">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 10l3-3 2.5 2.5L10 6l3.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="act-btn ico" onclick="openSplitModal()" title="Split Bill">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M8 2v12M5 5 2 2M5 11l-3 3M11 5l3-3M11 11l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-      </button>
-      <button class="act-btn ico" onclick="copyTxt()" title="Copy as Text" style="grid-column:3;grid-row:2">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M5 2h5.5A1.5 1.5 0 0 1 12 3.5V11a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 4 11V5l1-3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 5h4M6 7.5h4M6 10h2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
       </button>
     </div>
   </div>
@@ -817,7 +818,7 @@ function billHTML(data,opts){
   const {computed,totalFX,slab,sc,scGst,tcsAmount,total,pmodes}=data;
   const active=computed.filter(r=>r.forexINR>0);
   const slabR=Math.round(slab),scGstR=Math.round(scGst),totalR=Math.round(total);
-  const typeLabel=opts.typeLabel||(TYPE==='sale'?'SALE':'ENCASHMENT');
+  const typeLabel=opts.typeLabel||(TYPE==='sale'?'SALE QUOTE':'ENCASHMENT QUOTE');
   const totalLabel=opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
   const splitBadge=opts.splitLabel?`<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;letter-spacing:.1em;text-transform:uppercase">${opts.splitLabel}</div>`:'';
   const chips=pmodes.map(m=>`<span style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);display:inline-block">${m}</span>`).join('');
@@ -1077,11 +1078,11 @@ function renderSplitCard(i){
       <span class="sp-num">Split ${i+1} of ${splitCount} ${lockIcon}</span>
       <div class="sp-acts">
         ${unlockBtn}
-        <button class="sp-act" onclick="copySplitImg(${i})" title="Copy Image">
-          <svg width="12" height="12" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <button class="sp-act" onclick="downloadPDF({splitData:splitBillData(${i}),splitLabel:'Split ${i+1} of ${splitCount}'})" title="Download PDF">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="sp-act" onclick="printSplit(${i})" title="Print">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="2" y="5" width="10" height="6" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4 5V2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V5M4 9h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <button class="sp-act" onclick="downloadPNG({splitData:splitBillData(${i}),splitLabel:'Split ${i+1} of ${splitCount}'})" title="Download PNG">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M1 8l2.5-2.5 2 2L8 5l3 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </div>
@@ -1184,10 +1185,103 @@ function copyTxt(){
   const txt=`━━━━━━━━━━━━━━━━━━━━━\nMatrix Forex — ${typeLabel}\n━━━━━━━━━━━━━━━━━━━━━\n${nowStr()}\n\nCURRENCIES:\n${lines}${sub}\n\nCHARGES:\n  G&S Tax (Slabwise)  ${fINR(Math.round(d.slab))}\n  Service Charges     ${fINR(d.sc)}\n  Service Tax (18%)   ${fINR(Math.round(d.scGst))}${tcsLine}\n━━━━━━━━━━━━━━━━━━━━━\n${totalLabel}: ${fINR(Math.round(d.total))}\nPayment: ${d.pmodes.join(' | ')}`;
   navigator.clipboard.writeText(txt).then(()=>toast('✓ Text copied')).catch(()=>toast('Copy failed'));
 }
-function doPrint(){
+// ══════════ RENDER PRINT LAYOUT OFF-SCREEN ══════════
+async function renderPrintLayout(data, opts){
+  const snap=document.getElementById('snapTarget');
+  // Inject the print HTML into a hidden iframe for clean isolated rendering
+  const html=printHTML(data, opts||{});
+  snap.innerHTML='';
+  const iframe=document.createElement('iframe');
+  iframe.style.cssText='position:absolute;left:0;top:0;width:794px;height:1123px;border:none;visibility:hidden';
+  snap.appendChild(iframe);
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
+  // Wait for fonts + layout
+  await new Promise(r=>setTimeout(r,400));
+  return iframe;
+}
+
+// ══════════ DOWNLOAD PDF ══════════
+async function downloadPDF(opts){
   const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
   if(!has){toast('Generate a bill first');return;}
-  openPrintWin(printHTML(calcAll(),{}));
+  if(typeof html2canvas==='undefined'){toast('Library loading, try again');return;}
+
+  toast('Generating PDF…');
+  const data=(opts&&opts.splitData)?opts.splitData:calcAll();
+  const billOpts=opts||{};
+
+  try{
+    // Render the print layout to a canvas at 2× (A4 = 794×1123 px at 96dpi)
+    const snap=document.getElementById('snapTarget');
+    snap.innerHTML=`<div id="print-wrap" style="width:794px;background:#fff;padding:68px 83px 60px 83px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">${printHTML(data,billOpts)}</div>`;
+    await new Promise(r=>setTimeout(r,200));
+    const el=snap.querySelector('#print-wrap');
+    const canvas=await html2canvas(el,{
+      scale:2, useCORS:true, allowTaint:true, backgroundColor:'#fff',
+      logging:false, width:794, windowWidth:794
+    });
+    snap.innerHTML='';
+
+    // Load jsPDF lazily
+    if(typeof window.jspdf==='undefined'){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload=res; s.onerror=rej;
+        document.head.appendChild(s);
+      });
+    }
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const imgData=canvas.toDataURL('image/png');
+    // A4 = 210×297mm; fit canvas proportionally
+    const pdfW=pdf.internal.pageSize.getWidth();
+    const pdfH=(canvas.height/canvas.width)*pdfW;
+    pdf.addImage(imgData,'PNG',0,0,pdfW,Math.min(pdfH,pdf.internal.pageSize.getHeight()));
+    const label=opts&&opts.splitLabel?`-split-${opts.splitLabel.replace(/\s/g,'-')}`:'';
+    pdf.save(`matrix-forex-quote${label}.pdf`);
+    toast('✓ PDF downloaded');
+  }catch(e){
+    toast('PDF generation failed');
+    console.error(e);
+  }
+}
+
+// ══════════ DOWNLOAD PNG (print layout) ══════════
+async function downloadPNG(opts){
+  const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(!has){toast('Generate a bill first');return;}
+  if(typeof html2canvas==='undefined'){toast('Library loading, try again');return;}
+
+  toast('Generating PNG…');
+  const data=(opts&&opts.splitData)?opts.splitData:calcAll();
+  const billOpts=opts||{};
+
+  try{
+    const snap=document.getElementById('snapTarget');
+    snap.innerHTML=`<div id="print-wrap" style="width:794px;background:#fff;padding:68px 83px 60px 83px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">${printHTML(data,billOpts)}</div>`;
+    await new Promise(r=>setTimeout(r,200));
+    const el=snap.querySelector('#print-wrap');
+    const canvas=await html2canvas(el,{
+      scale:2, useCORS:true, allowTaint:true, backgroundColor:'#fff',
+      logging:false, width:794, windowWidth:794
+    });
+    snap.innerHTML='';
+    const label=opts&&opts.splitLabel?`-split-${opts.splitLabel.replace(/\s/g,'-')}`:'';
+    canvas.toBlob(blob=>{
+      const a=document.createElement('a');
+      a.download=`matrix-forex-quote${label}.png`;
+      a.href=URL.createObjectURL(blob);
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+      toast('✓ PNG downloaded');
+    },'image/png');
+  }catch(e){
+    toast('PNG generation failed');
+    console.error(e);
+  }
 }
 // ══════════ PRINT HTML (A4, black & white, professional) ══════════
 function printDateOnly(){
@@ -1197,7 +1291,7 @@ function printHTML(data, opts){
   const {computed,totalFX,slab,sc,scGst,tcsAmount,total,pmodes}=data;
   const active=computed.filter(r=>r.forexINR>0);
   const slabR=Math.round(slab), scGstR=Math.round(scGst), totalR=Math.round(total);
-  const typeLabel = opts.typeLabel||(TYPE==='sale'?'SALE':'ENCASHMENT');
+  const typeLabel = opts.typeLabel||(TYPE==='sale'?'SALE QUOTE':'ENCASHMENT QUOTE');
   const totalLabel= opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
   const splitBadge= opts.splitLabel ? `<div class="p-split-badge">${opts.splitLabel}</div>` : '';
 
@@ -1399,14 +1493,6 @@ body{
 <script>document.fonts.ready.then(()=>{setTimeout(()=>{window.print();},350);});<\/script>
 </body>
 </html>`;}
-
-function openPrintWin(printContent){
-  const blob=new Blob([printContent],{type:'text/html'});
-  const url=URL.createObjectURL(blob);
-  const win=window.open(url,'_blank','width=750,height=950,menubar=no,toolbar=no');
-  if(!win){toast('Allow pop-ups for print');URL.revokeObjectURL(url);return;}
-  setTimeout(()=>URL.revokeObjectURL(url),10000);
-}
 
 // ══════════ TOAST / FORMAT ══════════
 let toastTimer;
