@@ -1133,7 +1133,7 @@ async function copySplitImg(i){
   }catch(e){toast('Error capturing');console.error(e);}
 }
 
-function printSplit(i){openPrintWin(billHTML(splitBillData(i),{splitLabel:`Split ${i+1} of ${splitCount}`}));}
+function printSplit(i){openPrintWin(printHTML(splitBillData(i),{splitLabel:`Split ${i+1} of ${splitCount}`}));}
 
 async function copyAllSplits(){
   if(typeof html2canvas==='undefined'){toast('Library loading, try again');return;}
@@ -1187,16 +1187,203 @@ function copyTxt(){
 function doPrint(){
   const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
   if(!has){toast('Generate a bill first');return;}
-  openPrintWin(billHTML(calcAll(),{}));
+  openPrintWin(printHTML(calcAll(),{}));
 }
-function openPrintWin(content){
-  const win=window.open('','_blank','width=580,height=750,menubar=no,toolbar=no');
+// ══════════ PRINT HTML (A4, black & white optimised) ══════════
+function printHTML(data, opts){
+  const {computed,totalFX,slab,sc,scGst,tcsAmount,total,pmodes}=data;
+  const active=computed.filter(r=>r.forexINR>0);
+  const slabR=Math.round(slab), scGstR=Math.round(scGst), totalR=Math.round(total);
+  const typeLabel = opts.typeLabel||(TYPE==='sale'?'SALE':'ENCASHMENT');
+  const totalLabel= opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
+  const splitBadge= opts.splitLabel
+    ? `<div class="p-split-badge">${opts.splitLabel}</div>` : '';
+
+  // Currency rows
+  const tRows = active.map(r=>{
+    const rv=parseFloat(r.rate)||0;
+    const rd=rv<0.01?5:rv<1?4:2;
+    const fi=cinfo(r.code);
+    return `<tr>
+      <td class="p-td p-curr-name">${fi.flag} ${r.code}<span class="p-curr-full"> — ${fi.name}</span></td>
+      <td class="p-td p-right">${fcurr(r.currAmt,r.code)}</td>
+      <td class="p-td p-right">₹${rv.toFixed(rd)}</td>
+      <td class="p-td p-right p-bold">${fINR(r.forexINR)}</td>
+    </tr>`;
+  }).join('');
+
+  const subRow = active.length>1 ? `
+    <tr class="p-subtotal-row">
+      <td class="p-td" colspan="3"><strong>Subtotal (${active.length} currencies)</strong></td>
+      <td class="p-td p-right"><strong>${fINR(totalFX)}</strong></td>
+    </tr>` : '';
+
+  // Charge rows
+  const chargeRows = [
+    ['Goods &amp; Service Tax (Slabwise)', fINR(slabR)],
+    ['Service Charges', fINR(sc)],
+    ['Service Tax @ 18%', fINR(scGstR)],
+    ...(tcsAmount>0 ? [`TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})`, fINR(tcsAmount)] : [])
+      .reduce((a,_,i,arr)=>i%2===0?[...a,[arr[i],arr[i+1]]]:[a],[]).flat().length>0
+      ? tcsAmount>0 ? [[`TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})`, fINR(tcsAmount)]] : []
+      : []
+  ].map(([label,val],i,arr)=>`<tr>
+    <td class="p-charge-lbl">${label}</td>
+    <td class="p-charge-val">${val}</td>
+  </tr>`).join('');
+
+  // Payment methods as plain text
+  const payTxt = pmodes.join('  ·  ');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Matrix Forex — ${typeLabel}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  @page{size:A4 portrait;margin:18mm 16mm 16mm 16mm}
+  @media print{
+    body{margin:0}
+    a[href]:after{content:none!important}
+    .no-print{display:none}
+  }
+  body{
+    font-family:'DM Sans',Arial,sans-serif;
+    font-size:11pt;
+    color:#000;
+    background:#fff;
+    max-width:170mm;
+    margin:0 auto;
+    padding:12mm 0 0;
+  }
+
+  /* ── HEADER ── */
+  .p-header{border-bottom:2.5pt solid #000;padding-bottom:8pt;margin-bottom:10pt}
+  .p-co-name{font-size:18pt;font-weight:700;letter-spacing:-.3px;line-height:1}
+  .p-co-sub{font-size:8pt;letter-spacing:.15em;text-transform:uppercase;color:#555;margin-top:3pt}
+  .p-header-meta{display:flex;justify-content:space-between;align-items:flex-end;margin-top:6pt}
+  .p-tx-type{font-size:9pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+    border:1.2pt solid #000;padding:2pt 10pt;display:inline-block}
+  .p-date{font-size:9pt;color:#444;text-align:right}
+  .p-split-badge{font-size:8pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    color:#555;margin-top:3pt}
+
+  /* ── SECTION LABELS ── */
+  .p-section{margin-bottom:4pt}
+  .p-section-lbl{font-size:7.5pt;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+    color:#000;border-bottom:1pt solid #000;padding-bottom:2.5pt;margin-bottom:0}
+
+  /* ── CURRENCY TABLE ── */
+  .p-table{width:100%;border-collapse:collapse;margin-bottom:12pt}
+  .p-th{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+    color:#333;padding:5pt 6pt;border-bottom:1pt solid #888;text-align:left}
+  .p-th.p-right{text-align:right}
+  .p-td{font-size:10.5pt;padding:6pt 6pt;border-bottom:.6pt solid #ccc;vertical-align:middle}
+  .p-curr-name{font-weight:600}
+  .p-curr-full{font-weight:400;color:#555;font-size:9pt}
+  .p-right{text-align:right}
+  .p-bold{font-weight:700}
+  .p-subtotal-row td{border-top:1.2pt solid #000;border-bottom:1.2pt solid #000;
+    padding:5pt 6pt;font-size:10.5pt}
+
+  /* ── CHARGES ── */
+  .p-charges-table{width:100%;border-collapse:collapse;margin-bottom:6pt}
+  .p-charge-lbl{font-size:10.5pt;padding:5pt 0;border-bottom:.6pt solid #ddd;width:75%}
+  .p-charge-val{font-size:10.5pt;padding:5pt 0;border-bottom:.6pt solid #ddd;text-align:right;font-weight:600;width:25%}
+
+  /* ── TOTAL BOX ── */
+  .p-total-box{border:2pt solid #000;margin:10pt 0 8pt;padding:10pt 14pt}
+  .p-total-inner{display:flex;justify-content:space-between;align-items:baseline}
+  .p-total-lbl{font-size:8.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+  .p-total-amt{font-size:22pt;font-weight:700;letter-spacing:-.5px}
+
+  /* ── PAYMENT ── */
+  .p-payment{margin-bottom:12pt}
+  .p-payment-lbl{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#555;margin-bottom:3pt}
+  .p-payment-val{font-size:10pt;font-weight:600}
+
+  /* ── DISCLAIMER / FOOTER ── */
+  .p-footer{border-top:1pt solid #aaa;margin-top:auto;padding-top:6pt}
+  .p-disclaimer{font-size:8pt;color:#555;font-style:italic;line-height:1.5}
+  .p-footer-co{font-size:7.5pt;color:#888;text-align:right;margin-top:3pt}
+</style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="p-header">
+    <div class="p-co-name">Matrix Forex</div>
+    <div class="p-co-sub">Foreign Exchange Transaction</div>
+    <div class="p-header-meta">
+      <div>
+        <span class="p-tx-type">${typeLabel}</span>
+        ${splitBadge}
+      </div>
+      <div class="p-date">${nowStr()}</div>
+    </div>
+  </div>
+
+  <!-- CURRENCIES -->
+  <div class="p-section">
+    <div class="p-section-lbl">Currencies Exchanged</div>
+    <table class="p-table">
+      <thead><tr>
+        <th class="p-th">Currency</th>
+        <th class="p-th p-right">Amount</th>
+        <th class="p-th p-right">Rate (₹ per unit)</th>
+        <th class="p-th p-right">INR Value</th>
+      </tr></thead>
+      <tbody>${tRows}${subRow}</tbody>
+    </table>
+  </div>
+
+  <!-- CHARGES -->
+  <div class="p-section">
+    <div class="p-section-lbl">Charges &amp; Taxes</div>
+    <table class="p-charges-table">
+      <tbody>
+        <tr><td class="p-charge-lbl">Goods &amp; Service Tax (Slabwise)</td><td class="p-charge-val">${fINR(slabR)}</td></tr>
+        <tr><td class="p-charge-lbl">Service Charges</td><td class="p-charge-val">${fINR(sc)}</td></tr>
+        <tr><td class="p-charge-lbl">Service Tax @ 18%</td><td class="p-charge-val">${fINR(scGstR)}</td></tr>
+        ${tcsAmount>0?`<tr><td class="p-charge-lbl">TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})</td><td class="p-charge-val">${fINR(tcsAmount)}</td></tr>`:''}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TOTAL -->
+  <div class="p-total-box">
+    <div class="p-total-inner">
+      <span class="p-total-lbl">${totalLabel}</span>
+      <span class="p-total-amt">${fINR(totalR)}</span>
+    </div>
+  </div>
+
+  <!-- PAYMENT -->
+  <div class="p-payment">
+    <div class="p-payment-lbl">Accepted Payment Methods</div>
+    <div class="p-payment-val">${payTxt}</div>
+  </div>
+
+  <!-- FOOTER & DISCLAIMER -->
+  <div class="p-footer">
+    <div class="p-disclaimer">
+      <strong>Note:</strong> This is not a final bill. This document is for reference purposes only
+      and is not a valid receipt or official transaction record.
+    </div>
+    <div class="p-footer-co">Matrix Forex &nbsp;|&nbsp; Foreign Exchange</div>
+  </div>
+
+<script>document.fonts.ready.then(()=>{setTimeout(()=>{window.print();},350);});<\/script>
+</body>
+</html>`;
+}
+
+function openPrintWin(printContent){
+  const win=window.open('','_blank','width=700,height=900,menubar=no,toolbar=no');
   if(!win){toast('Allow pop-ups for print');return;}
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <title> </title>
-    <style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;font-family:'DM Sans',sans-serif}@page{margin:0;size:auto}@media print{body{margin:0}a[href]:after{content:none!important}}</style>
-  </head><body>${content}<script>document.fonts.ready.then(()=>{setTimeout(()=>{window.print();},350);});<\/script></body></html>`);
+  win.document.write(printContent);
   win.document.close();
 }
 
