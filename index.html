@@ -1243,10 +1243,20 @@ function printHTML(data, opts){
 <title>Matrix Forex — ${typeLabel}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  @page{size:A4 portrait;margin:18mm 16mm 16mm 16mm}
+  @page{
+    size:A4 portrait;
+    margin:18mm 16mm 16mm 16mm;
+    @top-left{content:none}
+    @top-center{content:none}
+    @top-right{content:none}
+    @bottom-left{content:none}
+    @bottom-center{content:none}
+    @bottom-right{content:none}
+  }
   @media print{
     body{margin:0}
     a[href]:after{content:none!important}
+    a{text-decoration:none}
     .no-print{display:none}
   }
   body{
@@ -1369,8 +1379,7 @@ function printHTML(data, opts){
   <!-- FOOTER & DISCLAIMER -->
   <div class="p-footer">
     <div class="p-disclaimer">
-      <strong>Note:</strong> This is not a final bill. This document is for reference purposes only
-      and is not a valid receipt or official transaction record.
+      <strong>Proforma Invoice.</strong> This is a Proforma Invoice and is issued for reference purposes only.
     </div>
     <div class="p-footer-co">Matrix Forex &nbsp;|&nbsp; Foreign Exchange</div>
   </div>
