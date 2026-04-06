@@ -1402,10 +1402,11 @@ body{
 </html>`;}
 
 function openPrintWin(printContent){
-  const win=window.open('','_blank','width=750,height=950,menubar=no,toolbar=no');
-  if(!win){toast('Allow pop-ups for print');return;}
-  win.document.write(printContent);
-  win.document.close();
+  const blob=new Blob([printContent],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank','width=750,height=950,menubar=no,toolbar=no');
+  if(!win){toast('Allow pop-ups for print');URL.revokeObjectURL(url);return;}
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
 }
 
 // ══════════ TOAST / FORMAT ══════════
