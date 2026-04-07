@@ -525,9 +525,13 @@ function payModes(total){
     const {rate:usdRate,found:usdFound}=getUSDRate();
     const cashLimitINR=3000*usdRate;
     const exceeds3k=usdFound&&total>cashLimitINR;
-    if(hasCard||exceeds3k)return['UPI','Bank Transfer'];
-    // Pure currency — standard rules
-    return total<50000?['Cash','UPI','Bank Transfer']:total<100000?['UPI','Bank Transfer']:['Bank Transfer'];
+    // Cash is blocked if: any card row, or exceeds $3000, or over ₹50K standard rule
+    const cashBlocked=hasCard||exceeds3k||total>=50000;
+    // UPI is blocked if: remittance (handled above), or over ₹1L
+    const upiBlocked=total>=100000;
+    if(upiBlocked)return['Bank Transfer'];
+    if(cashBlocked)return['UPI','Bank Transfer'];
+    return['Cash','UPI','Bank Transfer'];
   }
   // Encashment: no UPI. Cash only within USD equivalent limit.
   const {rate:usdRate}=getUSDRate();
