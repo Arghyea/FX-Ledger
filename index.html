@@ -51,6 +51,17 @@ input[type=number]{-moz-appearance:textfield}
 /* ── CURRENCY ROW ── */
 .cr{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-bottom:12px;border-left:3px solid var(--G);transition:box-shadow .2s}
 .cr:hover{box-shadow:var(--shadow-lg)}
+.cr-card{border-left-color:#6366F1}
+.cr-remit{border-left-color:#0891B2}
+/* Transaction type toggle */
+.txn-type-bar{display:flex;gap:2px;background:var(--bg);border-radius:9px;padding:3px;margin-bottom:0}
+.txn-type-btn{flex:1;padding:5px 6px;border:none;border-radius:7px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;background:transparent;color:var(--txt3);transition:all .18s}
+.txn-type-btn.on{background:var(--G);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.14)}
+.cr-card .txn-type-btn.on{background:#6366F1}
+.cr-remit .txn-type-btn.on{background:#0891B2}
+/* Card/remittance tag colours */
+.cr-tag-card{background:#6366F1;color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:30px}
+.cr-tag-remit{background:#0891B2;color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:30px}
 .cr-top{display:flex;align-items:center;gap:8px;margin-bottom:14px}
 .cr-idx{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt3)}
 .cr-tag{background:var(--G);color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:30px}
@@ -348,6 +359,8 @@ const CURRENCIES=[
   {code:'CAD',name:'Canadian Dollar',flag:'🇨🇦',dec:2},
   {code:'AUD',name:'Australian Dollar',flag:'🇦🇺',dec:2},
   {code:'SAR',name:'Saudi Riyal',flag:'🇸🇦',dec:2},
+  {code:'HKD',name:'Hong Kong Dollar',flag:'🇭🇰',dec:2},
+  {code:'ZAR',name:'South African Rand',flag:'🇿🇦',dec:2},
   {code:'LKR',name:'Sri Lankan Rupee',flag:'🇱🇰',dec:0},
   {code:'CNY',name:'Chinese Yuan',flag:'🇨🇳',dec:2},
   {code:'BHD',name:'Bahraini Dinar',flag:'🇧🇭',dec:3},
@@ -359,6 +372,8 @@ const CURRENCIES=[
   {code:'DKK',name:'Danish Krone',flag:'🇩🇰',dec:2},
   {code:'SEK',name:'Swedish Krona',flag:'🇸🇪',dec:2},
 ];
+// Currencies available on Forex Card
+const CARD_CURRENCIES=['USD','CAD','GBP','AUD','SGD','EUR','HKD','JPY','NZD','SAR','ZAR','CHF','THB','AED','SEK'];
 const SNAP={USD:5,EUR:10,GBP:5,AED:10,SGD:5,THB:50,MYR:5,JPY:1000,IDR:100000,
   VND:500000,KRW:10000,CAD:5,AUD:5,SAR:10,LKR:500,CNY:10,BHD:1,OMR:1,QAR:5,
   CHF:5,NZD:5,RUB:500,DKK:50,SEK:50};
@@ -388,9 +403,17 @@ function switchType(t){
 }
 
 // ══════════ ROW OPS ══════════
-function addRow(){const st=S();st.rows.push({id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency'});renderAll();updateBill();}
+function addRow(){const st=S();st.rows.push({id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency',txnType:'currency'});renderAll();updateBill();}
 function removeRow(id){S().rows=S().rows.filter(r=>r.id!==id);renderAll();updateBill();}
 function setMode(id,mode){const r=S().rows.find(x=>x.id===id);if(r){r.mode=mode;r.amount='';renderRowEl(r);updateBill();}}
+function setTxnType(id,txnType){
+  const r=S().rows.find(x=>x.id===id);if(!r)return;
+  r.txnType=txnType;
+  r.amount='';r.mode='currency'; // reset amount on type change
+  // Card: enforce card-only currencies
+  if(txnType==='card'&&!CARD_CURRENCIES.includes(r.code))r.code='USD';
+  renderRowEl(r);updateRowHints(r);updateBill();
+}
 function setCode(id,code){const r=S().rows.find(x=>x.id===id);if(!r)return;r.code=code;renderRowEl(r);updateRowHints(r);updateBill();}
 function setField(id,f,v){
   const r=S().rows.find(x=>x.id===id);if(!r)return;r[f]=v;
@@ -402,6 +425,8 @@ function setField(id,f,v){
 function applySnap(id,amt){const r=S().rows.find(x=>x.id===id);if(!r)return;r.amount=String(amt);r.mode='currency';renderRowEl(r);updateBill();}
 function updateRowHints(r){const el=document.getElementById('hints-'+r.id);if(el)el.innerHTML=buildHints(r);}
 function buildHints(r){
+  // No hints for card or remittance
+  if(r.txnType==='card'||r.txnType==='remittance')return'';
   const isSale=TYPE==='sale',isINR=isSale&&r.mode==='inr';
   const rate=parseFloat(r.rate)||0,amt=parseFloat(r.amount)||0;
   let currAmt=0,forexINR=0;
@@ -438,13 +463,14 @@ function onSC(v){
 
 // ══════════ CALC ══════════
 function slabGST(inr){
-  if(inr<=0)return 0;if(inr<=25000)return 45;
+  if(inr<=0)return 0;
+  if(inr<=25000)return 45;
   let g=45;
   if(inr<=100000)return g+(inr-25000)*0.0018;
-  g+=(100000-25000)*0.0018;
+  g+=(100000-25000)*0.0018;                  // ₹135
   if(inr<=1000000)return g+(inr-100000)*0.0009;
-  g+=(1000000-100000)*0.0009;
-  return g+(inr-1000000)*0.0009;
+  g+=(1000000-100000)*0.0009;                // ₹810
+  return g+(inr-1000000)*0.00018;            // 0.018% above ₹10L
 }
 function calcRowData(r){
   const rate=parseFloat(r.rate)||0,amt=parseFloat(r.amount)||0;
@@ -484,21 +510,29 @@ function calcTCS(totalFX){
   const selfFundedTaxable=Math.max(0,selfFunded-selfFundedExempt);
   return{tcsAmount:selfFundedTaxable*0.02,taxableExcess:selfFundedTaxable,selfFunded,selfFundedTaxable,loanAmt:loan};
 }
+function getUSDRate(){
+  const usdRow=S().rows.find(r=>r.code==='USD'&&parseFloat(r.rate)>0);
+  if(usdRow)return{rate:parseFloat(usdRow.rate),found:true};
+  return{rate:TYPE==='sale'?92:90,found:false};
+}
 function payModes(total){
   if(TYPE==='sale'){
+    const activeRows=S().rows.filter(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+    const hasCard=activeRows.some(r=>r.txnType==='card');
+    const hasRemittance=activeRows.some(r=>r.txnType==='remittance');
+    if(hasRemittance)return['Bank Transfer'];
+    // $3000 USD check
+    const {rate:usdRate,found:usdFound}=getUSDRate();
+    const cashLimitINR=3000*usdRate;
+    const exceeds3k=usdFound&&total>cashLimitINR;
+    if(hasCard||exceeds3k)return['UPI','Bank Transfer'];
+    // Pure currency — standard rules
     return total<50000?['Cash','UPI','Bank Transfer']:total<100000?['UPI','Bank Transfer']:['Bank Transfer'];
   }
-  // Encashment: no UPI ever. Cash only within USD equivalent limit.
-  const usdRate=getUSDRate();
+  // Encashment: no UPI. Cash only within USD equivalent limit.
+  const {rate:usdRate}=getUSDRate();
   const cashLimitINR=(mainCustType==='foreign'?3000:1000)*usdRate;
   return total<=cashLimitINR?['Cash','Bank Transfer']:['Bank Transfer'];
-}
-function getUSDRate(){
-  // Try to find USD rate from current rows; fall back to 85
-  const usdRow=S().rows.find(r=>r.code==='USD'&&parseFloat(r.rate)>0);
-  if(usdRow)return parseFloat(usdRow.rate);
-  // Estimate from any currency present using approximate cross-rates
-  return 85;
 }
 let mainCustType='indian';
 function setMainCustType(t){
@@ -532,30 +566,53 @@ function calcAll(){
   return{computed,totalFX,slab,sc:SC,scGst,tcsAmount:Math.round(tcsAmount),taxableExcess:Math.round(taxableExcess),total,pmodes:payModes(total)};
 }
 
-// ══════════ RENDER ROWS ══════════
 function renderAll(){
   const c=document.getElementById('crContainer');c.innerHTML='';
   S().rows.forEach(r=>{const d=document.createElement('div');d.id='row-'+r.id;d.innerHTML=buildRow(r);c.appendChild(d);});
 }
 function renderRowEl(r){const el=document.getElementById('row-'+r.id);if(el)el.innerHTML=buildRow(r);}
 function buildRow(r){
-  const isSale=TYPE==='sale',isINR=isSale&&r.mode==='inr';
+  const isSale=TYPE==='sale';
+  const txnType=r.txnType||'currency';
+  const isCard=txnType==='card';
+  const isRemittance=txnType==='remittance';
+  const isINR=isSale&&r.mode==='inr'&&txnType==='currency';
   const idx=S().rows.findIndex(x=>x.id===r.id)+1;
   const info=cinfo(r.code);
-  const modeBar=isSale?`<div class="mode-bar">
+
+  // Txn type tag label for header
+  const typeTag=isCard?`<span class="cr-tag cr-tag-card">💳 Card</span>`:isRemittance?`<span class="cr-tag cr-tag-remit">🏦 Remittance</span>`:`<span class="cr-tag">${info.flag} ${r.code}</span>`;
+
+  // Txn type selector (Sale only)
+  const txnBar=isSale?`<div class="txn-type-bar">
+    <button class="txn-type-btn${txnType==='currency'?' on':''}" onclick="setTxnType(${r.id},'currency')">Currency</button>
+    <button class="txn-type-btn${txnType==='card'?' on':''}" onclick="setTxnType(${r.id},'card')">Forex Card</button>
+    <button class="txn-type-btn${txnType==='remittance'?' on':''}" onclick="setTxnType(${r.id},'remittance')">Remittance</button>
+  </div>`:'';
+
+  // Mode bar (By Amount / By INR Budget) — currency only
+  const modeBar=isSale&&txnType==='currency'?`<div class="mode-bar">
     <button class="mode-btn${r.mode==='currency'?' on':''}" onclick="setMode(${r.id},'currency')">By Currency Amount</button>
     <button class="mode-btn${r.mode==='inr'?' on':''}" onclick="setMode(${r.id},'inr')">By INR Budget</button>
   </div>`:'';
-  return`<div class="cr">
+
+  // Amount input — card: integer only; others: normal
+  const amtLabel=isINR?'INR Budget (₹ forex value)':isRemittance?`Amount (${r.code})`:`Amount (${r.code})${isCard?' — whole units only':''}`;
+  const amtInput=isINR
+    ?`<div class="pfx-wrap"><span class="pfx-sym">₹</span><input class="inp pfx" type="number" placeholder="0" value="${r.amount}" oninput="setField(${r.id},'amount',this.value)"></div>`
+    :`<input class="inp" type="number" placeholder="0" value="${r.amount}" ${isCard?'step="1"':''} oninput="setField(${r.id},'amount',this.value)">`;
+
+  return`<div class="cr${isCard?' cr-card':isRemittance?' cr-remit':''}">
     <div class="cr-top">
-      <span class="cr-idx">Currency ${idx}</span>
-      <span class="cr-tag">${info.flag} ${r.code}</span>
+      <span class="cr-idx">${isRemittance?'Remittance':'Currency'} ${idx}</span>
+      ${typeTag}
       ${S().rows.length>1?`<button class="cr-del" onclick="removeRow(${r.id})">✕</button>`:''}
     </div>
-    <div class="cr-grid">
+    ${txnBar}
+    <div class="cr-grid" style="margin-top:10px">
       <div class="inp-g">
-        <label class="inp-lbl">Currency</label>
-        ${buildPicker(r.id,r.code)}
+        <label class="inp-lbl">${isCard?'Forex Card Currency':'Currency'}</label>
+        ${buildPicker(r.id,r.code,isCard)}
       </div>
       <div class="inp-g">
         <label class="inp-lbl">Rate (₹ per 1 ${r.code})</label>
@@ -566,11 +623,8 @@ function buildRow(r){
     </div>
     ${modeBar}
     <div class="inp-g" style="margin-top:12px">
-      <label class="inp-lbl">${isINR?'INR Budget (₹ forex value)':`Amount (${r.code})`}</label>
-      <div class="pfx-wrap">
-        ${isINR?'<span class="pfx-sym">₹</span>':''}
-        <input class="inp${isINR?' pfx':''}" type="number" placeholder="0" value="${r.amount}" oninput="setField(${r.id},'amount',this.value)">
-      </div>
+      <label class="inp-lbl">${amtLabel}</label>
+      ${amtInput}
     </div>
     <div id="hints-${r.id}">${buildHints(r)}</div>
   </div>`;
@@ -578,7 +632,7 @@ function buildRow(r){
 
 // ══════════ CURRENCY PICKER ══════════
 let openPickerId=null;
-function buildPicker(rowId,sel){
+function buildPicker(rowId,sel,cardOnly){
   const info=cinfo(sel);
   return`<div class="curr-picker" id="picker-${rowId}">
     <button type="button" class="curr-display" id="pdisp-${rowId}" onclick="togglePicker(${rowId})">
@@ -597,22 +651,25 @@ function togglePicker(id){
   const picker=document.getElementById('picker-'+id);
   const r=S().rows.find(x=>x.id===id);
   const sel=r?r.code:'USD';
+  const cardOnly=r&&r.txnType==='card';
   const drop=document.createElement('div');drop.className='curr-drop';drop.id='pdrop-'+id;
-  drop.innerHTML=dropHTML(id,sel,'');
+  drop.innerHTML=dropHTML(id,sel,'',cardOnly);
   picker.appendChild(drop);
   const inp=drop.querySelector('.curr-search');
   if(inp){inp.focus();inp.addEventListener('input',()=>filterDrop(id,inp.value));inp.addEventListener('keydown',e=>dropKey(e,id));}
 }
-function dropHTML(id,sel,filter){
-  const m=CURRENCIES.filter(c=>!filter||c.code.toLowerCase().includes(filter.toLowerCase())||c.name.toLowerCase().includes(filter.toLowerCase()));
+function dropHTML(id,sel,filter,cardOnly){
+  const pool=cardOnly?CURRENCIES.filter(c=>CARD_CURRENCIES.includes(c.code)):CURRENCIES;
+  const m=pool.filter(c=>!filter||c.code.toLowerCase().includes(filter.toLowerCase())||c.name.toLowerCase().includes(filter.toLowerCase()));
   const opts=m.length===0?`<div class="curr-no-results">No results</div>`:m.map(c=>`<div class="curr-opt${c.code===sel?' selected':''}" onclick="pickerSel(${id},'${c.code}')" data-code="${c.code}"><span class="curr-flag">${c.flag}</span><span class="curr-opt-code">${c.code}</span><span class="curr-opt-name">${c.name}</span></div>`).join('');
   return`<input class="curr-search" placeholder="Search…" value="${filter}" autocomplete="off" spellcheck="false"><div class="curr-list">${opts}</div>`;
 }
 function filterDrop(id,val){
-  const r=S().rows.find(x=>x.id===id);const sel=r?r.code:'USD';
+  const r=S().rows.find(x=>x.id===id);const sel=r?r.code:'USD';const cardOnly=r&&r.txnType==='card';
   const drop=document.getElementById('pdrop-'+id);if(!drop)return;
   const list=drop.querySelector('.curr-list');
-  const m=CURRENCIES.filter(c=>!val||c.code.toLowerCase().includes(val.toLowerCase())||c.name.toLowerCase().includes(val.toLowerCase()));
+  const pool=cardOnly?CURRENCIES.filter(c=>CARD_CURRENCIES.includes(c.code)):CURRENCIES;
+  const m=pool.filter(c=>!val||c.code.toLowerCase().includes(val.toLowerCase())||c.name.toLowerCase().includes(val.toLowerCase()));
   list.innerHTML=m.length===0?`<div class="curr-no-results">No results</div>`:m.map(c=>`<div class="curr-opt${c.code===sel?' selected':''}" onclick="pickerSel(${id},'${c.code}')" data-code="${c.code}"><span class="curr-flag">${c.flag}</span><span class="curr-opt-code">${c.code}</span><span class="curr-opt-name">${c.name}</span></div>`).join('');
 }
 function dropKey(e,id){
@@ -725,6 +782,9 @@ function refreshBillOnly(){
 function renderTCSSection(){
   const el=document.getElementById('tcsSection');if(!el)return;
   if(TYPE!=='sale'){el.innerHTML='';return;}
+  // Hide TCS if all rows are Forex Card (card spending is not LRS remittance)
+  const allCard=S().rows.length>0&&S().rows.every(r=>(r.txnType||'currency')==='card');
+  if(allCard){el.innerHTML='';return;}
   if(!tcsEnabled){
     el.innerHTML=`<div class="tcs-trigger"><button class="tcs-trigger-btn" onclick="enableTCS('manual')">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M6 3.5v5M3.5 6h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -794,8 +854,14 @@ function updateBill(){
   renderEncCustBar();
   if(TYPE==='sale'){
     let totalFX=0;S().rows.forEach(r=>{const c=calcRowData(r);totalFX+=c.forexINR;});
-    if(totalFX>TCS_THR&&!tcsEnabled){tcsEnabled=true;tcsMode='auto';}
-    else if(totalFX<=TCS_THR&&tcsEnabled&&tcsMode==='auto'){tcsEnabled=false;tcsMode='manual';}
+    // Auto TCS only if not all-card
+    const allCard=S().rows.length>0&&S().rows.every(r=>(r.txnType||'currency')==='card');
+    if(!allCard){
+      if(totalFX>TCS_THR&&!tcsEnabled){tcsEnabled=true;tcsMode='auto';}
+      else if(totalFX<=TCS_THR&&tcsEnabled&&tcsMode==='auto'){tcsEnabled=false;tcsMode='manual';}
+    } else {
+      if(tcsEnabled&&tcsMode==='auto'){tcsEnabled=false;tcsMode='manual';}
+    }
   }
   renderTCSSection();
   const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
@@ -805,7 +871,18 @@ function updateBill(){
   const totalR=Math.round(data.total);
   if(TYPE==='sale'){
     tbar.style.display='flex';
-    if(totalR<50000){tbar.className='tbar ok';tbar.textContent='✓ Under ₹50,000 — All payment methods available';}
+    // Check txn types
+    const activeRows=S().rows.filter(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+    const hasRemittance=activeRows.some(r=>r.txnType==='remittance');
+    const hasCard=activeRows.some(r=>r.txnType==='card');
+    // $3000 USD check (only show if USD row present)
+    const {rate:usdRate,found:usdFound}=getUSDRate();
+    const cashLimitINR=3000*usdRate;
+    const exceeds3k=usdFound&&totalR>cashLimitINR;
+    if(hasRemittance){tbar.className='tbar ok';tbar.textContent='🏦 Remittance — Bank Transfer only';}
+    else if(exceeds3k){tbar.className='tbar warn';tbar.textContent=`⚠ Exceeds $3,000 equivalent — Cash not permitted per RBI. Forex Card or Bank Transfer only.`;}
+    else if(hasCard){tbar.className='tbar ok';tbar.textContent='💳 Forex Card — Cash not applicable';}
+    else if(totalR<50000){tbar.className='tbar ok';tbar.textContent='✓ Under ₹50,000 — All payment methods available';}
     else if(totalR<100000){tbar.className='tbar warn';tbar.textContent=`⚠ ₹${fn(totalR-50000)} over ₹50,000 — Cash not allowed`;}
     else{tbar.className='tbar warn';tbar.textContent='⚠ Over ₹1,00,000 — Bank Transfer only';}
   }else{tbar.style.display='none';}
@@ -825,8 +902,14 @@ function billHTML(data,opts){
   const tRows=active.map(r=>{
     const rv=parseFloat(r.rate)||0;const rd=rv<0.01?5:rv<1?4:2;
     const fi=cinfo(r.code);
+    const txnType=r.txnType||'currency';
+    const currLabel=txnType==='card'
+      ?`<span style="font-weight:700;color:#1C3829">💳 Forex Card</span><span style="font-size:11px;color:#6B7A72;margin-left:4px">— ${r.code}</span>`
+      :txnType==='remittance'
+      ?`<span style="font-weight:700;color:#1C3829">🏦 Remittance</span><span style="font-size:11px;color:#6B7A72;margin-left:4px">— ${r.code}</span>`
+      :`<span style="font-weight:700;color:#1C3829;display:inline-flex;align-items:center;gap:4px"><span style="font-size:14px">${fi.flag}</span><span>${r.code}</span></span>`;
     return`<tr>
-      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px"><span style="font-weight:700;color:#1C3829;display:inline-flex;align-items:center;gap:4px"><span style="font-size:14px">${fi.flag}</span><span>${r.code}</span></span></td>
+      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px">${currLabel}</td>
       <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;color:#1A202C;font-weight:500">${fcurr(r.currAmt,r.code)}</td>
       <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;color:#1A202C;font-weight:500">₹${rv.toFixed(rd)}</td>
       <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;text-align:right;font-weight:700;color:#0F1611">${fINR(r.forexINR)}</td>
@@ -870,7 +953,7 @@ function billHTML(data,opts){
     </div>
   </div>
   <div style="background:#1C3829;padding:0 28px 18px">
-    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.38);margin-bottom:8px">Accepted Payment Methods</div>
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.38);margin-bottom:8px">Mode of Payment</div>
     <div style="display:flex;gap:7px;flex-wrap:wrap">${chips}</div>
   </div>
 </div>`;
