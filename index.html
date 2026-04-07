@@ -1382,8 +1382,14 @@ function printHTML(data, opts){
     const rv=parseFloat(r.rate)||0;
     const rd=rv<0.01?5:rv<1?4:2;
     const fi=cinfo(r.code);
+    const txnType=r.txnType||'currency';
+    const currLabel=txnType==='card'
+      ?`<strong>Forex Card</strong><span class="p-curr-full"> — ${r.code}</span>`
+      :txnType==='remittance'
+      ?`<strong>Remittance</strong><span class="p-curr-full"> — ${r.code}</span>`
+      :`${fi.flag} ${fi.code}<span class="p-curr-full"> — ${fi.name}</span>`;
     return`<tr>
-      <td class="p-td p-curr-name">${fi.flag} ${fi.code}<span class="p-curr-full"> — ${fi.name}</span></td>
+      <td class="p-td p-curr-name">${currLabel}</td>
       <td class="p-td p-right">${fcurr(r.currAmt,r.code)}</td>
       <td class="p-td p-right">₹${rv.toFixed(rd)}</td>
       <td class="p-td p-right p-bold">${fINR(r.forexINR)}</td>
@@ -1559,7 +1565,7 @@ body{
 
     <!-- PAYMENT METHODS -->
     <div>
-      <div class="p-payment-lbl">Accepted Payment Methods</div>
+      <div class="p-payment-lbl">Mode of Payment</div>
       <div class="p-payment-val">${payTxt}</div>
     </div>
   </div>
