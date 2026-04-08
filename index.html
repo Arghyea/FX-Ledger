@@ -362,6 +362,7 @@ const CURRENCIES=[
   {code:'CAD',name:'Canadian Dollar',flag:'🇨🇦',dec:2},
   {code:'AUD',name:'Australian Dollar',flag:'🇦🇺',dec:2},
   {code:'SAR',name:'Saudi Riyal',flag:'🇸🇦',dec:2},
+  {code:'PHP',name:'Philippine Peso',flag:'🇵🇭',dec:2},
   {code:'HKD',name:'Hong Kong Dollar',flag:'🇭🇰',dec:2},
   {code:'ZAR',name:'South African Rand',flag:'🇿🇦',dec:2},
   {code:'LKR',name:'Sri Lankan Rupee',flag:'🇱🇰',dec:0},
@@ -1309,7 +1310,7 @@ async function downloadPDF(opts){
     await new Promise(r=>setTimeout(r,200));
     const el=snap.querySelector('#print-wrap');
     const canvas=await html2canvas(el,{
-      scale:2, useCORS:true, allowTaint:true, backgroundColor:'#fff',
+      scale:1.5, useCORS:true, allowTaint:true, backgroundColor:'#fff',
       logging:false, width:794, windowWidth:794
     });
     snap.innerHTML='';
@@ -1325,11 +1326,10 @@ async function downloadPDF(opts){
     }
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const imgData=canvas.toDataURL('image/png');
-    // A4 = 210×297mm; fit canvas proportionally
+    const imgData=canvas.toDataURL('image/jpeg',0.85);
     const pdfW=pdf.internal.pageSize.getWidth();
     const pdfH=(canvas.height/canvas.width)*pdfW;
-    pdf.addImage(imgData,'PNG',0,0,pdfW,Math.min(pdfH,pdf.internal.pageSize.getHeight()));
+    pdf.addImage(imgData,'JPEG',0,0,pdfW,Math.min(pdfH,pdf.internal.pageSize.getHeight()));
     const label=opts&&opts.splitLabel?`-split-${opts.splitLabel.replace(/\s/g,'-')}`:'';
     pdf.save(`matrix-forex-quote${label}.pdf`);
     toast('✓ PDF downloaded');
