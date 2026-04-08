@@ -429,8 +429,8 @@ function setField(id,f,v){
 function applySnap(id,amt){const r=S().rows.find(x=>x.id===id);if(!r)return;r.amount=String(amt);r.mode='currency';renderRowEl(r);updateBill();}
 function updateRowHints(r){const el=document.getElementById('hints-'+r.id);if(el)el.innerHTML=buildHints(r);}
 function buildHints(r){
-  // No hints for card or remittance
-  if(r.txnType==='card'||r.txnType==='remittance')return'';
+  // No hints for card, remittance, or encashment
+  if(r.txnType==='card'||r.txnType==='remittance'||TYPE==='encashment')return '';
   const isSale=TYPE==='sale',isINR=isSale&&r.mode==='inr';
   const rate=parseFloat(r.rate)||0,amt=parseFloat(r.amount)||0;
   let currAmt=0,forexINR=0;
