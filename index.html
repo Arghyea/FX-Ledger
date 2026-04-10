@@ -199,14 +199,27 @@ input[type=number]{-moz-appearance:textfield}
 .tbar.warn{background:#FFF7ED;color:#92400E;border:1px solid #FED7AA}
 
 /* ── ACTION BTNS ── */
-.act-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-.act-btn{padding:12px 10px;border:none;border-radius:var(--rss);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;white-space:nowrap}
-.act-btn.full{grid-column:span 3}
-.act-btn.pri{background:var(--G);color:#fff}
+.act-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px}
+.act-btn{padding:12px 10px;border:none;border-radius:var(--rss);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s;white-space:nowrap}
+.act-btn.full{grid-column:span 4}
+.act-btn.pri{background:var(--G);color:#fff;font-size:13px}
 .act-btn.pri:hover{background:var(--G2);box-shadow:0 4px 14px rgba(28,56,41,.3)}
-.act-btn.sec{background:#fff;color:var(--txt);border:1.5px solid var(--bdr);box-shadow:var(--shadow);font-size:12px}
+.act-btn.sec{background:#fff;color:var(--txt);border:1.5px solid var(--bdr);box-shadow:var(--shadow)}
 .act-btn.sec:hover{border-color:var(--G);color:var(--G)}
 .act-btn.sec svg{flex-shrink:0}
+
+/* ── HOLD ── */
+.hold-bar{display:none;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.hold-chip{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--rss);padding:8px 11px 8px 12px;cursor:pointer;transition:all .18s;box-shadow:var(--shadow);min-width:0;max-width:100%}
+.hold-chip:hover{border-color:var(--G);box-shadow:var(--shadow-lg)}
+.hold-chip-info{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+.hold-chip-label{font-size:12px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hold-chip-total{font-size:11px;color:var(--txt3);font-weight:500}
+.hold-chip-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.8);background:var(--G);border-radius:4px;padding:1px 5px;flex-shrink:0}
+.hold-chip-x{background:none;border:none;color:var(--txt3);cursor:pointer;padding:0 0 0 4px;font-size:15px;line-height:1;flex-shrink:0;transition:color .15s;font-family:inherit}
+.hold-chip-x:hover{color:#EF4444}
+.hold-btn{width:100%;background:none;border:1.5px dashed var(--bdr);border-radius:var(--rss);padding:9px;font-family:inherit;font-size:12px;font-weight:600;color:var(--txt3);cursor:pointer;display:none;align-items:center;justify-content:center;gap:6px;transition:all .18s;margin-bottom:9px}
+.hold-btn:hover{border-color:var(--G);color:var(--G);background:var(--Gp)}
 
 /* ── PICKER ── */
 .curr-picker{position:relative}
@@ -259,7 +272,7 @@ input[type=number]{-moz-appearance:textfield}
 <div class="main-wrap">
 <div class="wrap">
   <div class="lc">
-    <div class="sc">
+    <div class="sc" id="scCard">
       <div class="sc-lbl">Service Charges</div>
       <div class="svc-row">
         <span class="svc-lbl">Service Charge (₹)</span>
@@ -268,6 +281,10 @@ input[type=number]{-moz-appearance:textfield}
       <div class="svc-row">
         <span class="svc-lbl">Service Tax @ 18%</span>
         <span class="svc-val" id="lblSCT">₹45.00</span>
+      </div>
+      <div id="nostroRow" style="display:none" class="svc-row">
+        <span class="svc-lbl">Nostro Charges (₹)</span>
+        <input class="svc-inp" id="inpNostro" type="number" value="0" min="0" oninput="onNostro(this.value)">
       </div>
       <div class="svc-footer">
         <span class="lbl">Total Service Charges</span>
@@ -281,9 +298,13 @@ input[type=number]{-moz-appearance:textfield}
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       Add Currency
     </button>
+    <div style="text-align:right;margin-top:10px">
+      <button onclick="resetCurrent()" style="background:none;border:none;font-family:inherit;font-size:11px;color:var(--txt3);cursor:pointer;padding:4px 2px;transition:color .15s" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='var(--txt3)'">↺ Reset</button>
+    </div>
   </div>
 
   <div class="rc">
+    <div class="hold-bar" id="holdBar"></div>
     <div class="bill-outer"><div id="billInner">
       <div class="bill-empty">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="opacity:.25;display:block;margin:0 auto 12px"><rect x="6" y="4" width="24" height="28" rx="3" stroke="#1C3829" stroke-width="1.8"/><path d="M11 11h14M11 16h14M11 21h9" stroke="#1C3829" stroke-width="1.8" stroke-linecap="round"/><path d="M23 23l4 4M23 27l4-4" stroke="#1C3829" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -292,10 +313,18 @@ input[type=number]{-moz-appearance:textfield}
       </div>
     </div></div>
     <div class="tbar" id="tbar" style="display:none"></div>
+    <button class="hold-btn" id="holdBtn" onclick="holdBill()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="2" width="3.5" height="9" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="7.5" y="2" width="3.5" height="9" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>
+      Hold Bill
+    </button>
     <div class="act-row">
       <button class="act-btn pri full" onclick="copyImg()">
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="white" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
         Copy Bill Image
+      </button>
+      <button class="act-btn sec" onclick="copyInvoiceImg()">
+        <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Copy Invoice
       </button>
       <button class="act-btn sec" onclick="downloadPDF()">
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -324,8 +353,8 @@ input[type=number]{-moz-appearance:textfield}
       <div class="split-hdr-right">
         <div class="split-cnt-bar" id="splitCntBar"></div>
         <button class="split-copy-all" onclick="copyAllSplits()">
-          <svg width="12" height="12" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="white" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
-          Copy All
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Save All
         </button>
       </div>
       <button class="split-modal-x" onclick="closeSplitModal()">✕</button>
@@ -403,6 +432,9 @@ let tcsEnabled=false, tcsType='personal', tcsPrior=0, tcsLoan=0, tcsMode='manual
 const TCS_THR=1000000;
 const TCS_RATES={education:0.02,personal:0.20};
 
+// Nostro charge (Remittance only)
+let NOSTRO=0;
+
 // Split
 let splitCount=2, splitData=[], splitCustType='indian';
 
@@ -473,6 +505,22 @@ function onSC(v){
   document.getElementById('lblSCT').textContent='₹'+fn(t);
   document.getElementById('lblSCTotal').textContent='₹'+fn(SC+t);
   updateBill();
+}
+function onNostro(v){NOSTRO=parseFloat(v)||0;updateBill();}
+
+function resetCurrent(){
+  const st=S();
+  st.rows=[{id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency',txnType:'currency'}];
+  SC=250;NOSTRO=0;
+  document.getElementById('inpSC').value=250;
+  const nostroInp=document.getElementById('inpNostro');
+  if(nostroInp)nostroInp.value=0;
+  onSC(250);
+  if(TYPE==='sale'){
+    tcsEnabled=false;tcsMode='manual';tcsType='personal';tcsPrior=0;tcsLoan=0;tcsFullLRS=false;
+  }
+  splitData=[];
+  renderAll();updateBill();
 }
 
 // ══════════ CALC ══════════
@@ -579,9 +627,11 @@ function calcAll(){
   const computed=S().rows.map(r=>{const c=calcRowData(r);totalFX+=c.forexINR;return{...r,...c};});
   const slab=slabGST(totalFX);
   const {tcsAmount,taxableExcess}=calcTCS(totalFX);
-  const base=TYPE==='sale'?totalFX+slab+SC+scGst:totalFX-slab-SC-scGst;
+  const hasRemittance=S().rows.some(r=>(r.txnType||'currency')==='remittance'&&(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  const nostro=hasRemittance?NOSTRO:0;
+  const base=TYPE==='sale'?totalFX+slab+SC+scGst+nostro:totalFX-slab-SC-scGst;
   const total=base+Math.round(tcsAmount);
-  return{computed,totalFX,slab,sc:SC,scGst,tcsAmount:Math.round(tcsAmount),taxableExcess:Math.round(taxableExcess),total,pmodes:payModes(total)};
+  return{computed,totalFX,slab,sc:SC,scGst,nostro,tcsAmount:Math.round(tcsAmount),taxableExcess:Math.round(taxableExcess),total,pmodes:payModes(total)};
 }
 
 function renderAll(){
@@ -594,7 +644,7 @@ function buildRow(r){
   const txnType=r.txnType||'currency';
   const isCard=txnType==='card';
   const isRemittance=txnType==='remittance';
-  const isINR=isSale&&r.mode==='inr'&&txnType==='currency';
+  const isINR=isSale&&r.mode==='inr'&&(txnType==='currency'||txnType==='card');
   const idx=S().rows.findIndex(x=>x.id===r.id)+1;
   const info=cinfo(r.code);
 
@@ -608,14 +658,14 @@ function buildRow(r){
     <button class="txn-type-btn${txnType==='remittance'?' on':''}" onclick="setTxnType(${r.id},'remittance')">Remittance</button>
   </div>`:'';
 
-  // Mode bar (By Amount / By INR Budget) — currency only
-  const modeBar=isSale&&txnType==='currency'?`<div class="mode-bar">
-    <button class="mode-btn${r.mode==='currency'?' on':''}" onclick="setMode(${r.id},'currency')">By Currency Amount</button>
+  // Mode bar — currency and card support INR budget
+  const modeBar=isSale&&(txnType==='currency'||txnType==='card')?`<div class="mode-bar">
+    <button class="mode-btn${r.mode==='currency'?' on':''}" onclick="setMode(${r.id},'currency')">By ${isCard?'Card Amount':'Currency Amount'}</button>
     <button class="mode-btn${r.mode==='inr'?' on':''}" onclick="setMode(${r.id},'inr')">By INR Budget</button>
   </div>`:'';
 
-  // Amount input — card: integer only; others: normal
-  const amtLabel=isINR?'INR Budget (₹ forex value)':isRemittance?`Amount (${r.code})`:`Amount (${r.code})${isCard?' — whole units only':''}`;
+  // Amount input — card non-INR: integer only; INR budget: ₹ prefix; others: normal
+  const amtLabel=isINR?'INR Budget (₹ load value)':isRemittance?`Amount (${r.code})`:`Amount (${r.code})${isCard&&!isINR?' — whole units only':''}`;
   const amtInput=isINR
     ?`<div class="pfx-wrap"><span class="pfx-sym">₹</span><input class="inp pfx" type="number" placeholder="0" value="${r.amount}" oninput="setField(${r.id},'amount',this.value)"></div>`
     :`<input class="inp" type="number" placeholder="0" value="${r.amount}" ${isCard?'step="1"':''} oninput="setField(${r.id},'amount',this.value)">`;
@@ -865,11 +915,94 @@ function renderTCSSection(){
   </div>`;
 }
 
+// ══════════ HOLD ══════════
+let holdSlots=[];
+const MAX_HOLDS=3;
+
+function holdBill(){
+  const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(!has){toast('Nothing to hold');return;}
+  if(holdSlots.length>=MAX_HOLDS){toast('Max 3 bills on hold');return;}
+  const data=calcAll();
+  const snapshot={
+    type:TYPE,
+    rows:JSON.parse(JSON.stringify(S().rows)),
+    sc:SC,nostro:NOSTRO,
+    tcs:{tcsEnabled,tcsType,tcsPrior,tcsLoan,tcsMode,tcsFullLRS},
+    label:buildHoldLabel(S().rows),
+    total:Math.round(data.total)
+  };
+  holdSlots.push(snapshot);
+  resetCurrent();
+  renderHoldBar();
+  toast('Bill held — start new transaction');
+}
+
+function restoreHold(idx){
+  const snap=holdSlots[idx];
+  holdSlots.splice(idx,1);
+  // Switch type if needed
+  if(TYPE!==snap.type){
+    TYPE=snap.type;
+    document.getElementById('tbSale').classList.toggle('on',TYPE==='sale');
+    document.getElementById('tbEnc').classList.toggle('on',TYPE==='encashment');
+  }
+  // Restore rows
+  const st=S();
+  st.rows=snap.rows;
+  st.uid=Math.max(0,...snap.rows.map(r=>r.id))+1;
+  // Restore charges
+  SC=snap.sc;NOSTRO=snap.nostro;
+  document.getElementById('inpSC').value=SC;
+  const ni=document.getElementById('inpNostro');if(ni)ni.value=NOSTRO;
+  const t=SC*0.18;
+  document.getElementById('lblSCT').textContent='₹'+fn(t);
+  // Restore TCS
+  ({tcsEnabled,tcsType,tcsPrior,tcsLoan,tcsMode,tcsFullLRS}=snap.tcs);
+  renderAll();updateBill();renderHoldBar();
+  toast('Bill restored');
+}
+
+function discardHold(idx){
+  holdSlots.splice(idx,1);
+  renderHoldBar();
+  toast('Hold discarded');
+}
+
+function buildHoldLabel(rows){
+  const active=rows.filter(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(active.length===0)return'Empty';
+  return active.slice(0,2).map(r=>{const fi=cinfo(r.code);return fi.flag+' '+r.code;}).join(' + ')+(active.length>2?' …':'');
+}
+
+function renderHoldBar(){
+  const bar=document.getElementById('holdBar');if(!bar)return;
+  if(holdSlots.length===0){bar.style.display='none';return;}
+  bar.style.display='flex';
+  bar.innerHTML=holdSlots.map((s,i)=>`
+    <div class="hold-chip" onclick="restoreHold(${i})" title="Tap to restore">
+      <div class="hold-chip-info">
+        <span class="hold-chip-label">${s.label}</span>
+        <span class="hold-chip-total">${fINR(s.total)}</span>
+      </div>
+      <span class="hold-chip-tag">${s.type==='sale'?'Sale':'Enc'}</span>
+      <button class="hold-chip-x" onclick="event.stopPropagation();discardHold(${i})" title="Discard">×</button>
+    </div>`).join('');
+}
+
 // ══════════ UPDATE BILL ══════════
 function updateBill(){
   const inner=document.getElementById('billInner');
   const tbar=document.getElementById('tbar');
   renderEncCustBar();
+  // Show nostro field only when at least one remittance row has data
+  const hasRemitRow=S().rows.some(r=>(r.txnType||'currency')==='remittance'&&(parseFloat(r.rate)||0)>0);
+  const nostroRow=document.getElementById('nostroRow');
+  if(nostroRow)nostroRow.style.display=hasRemitRow?'flex':'none';
+  // Update total SC label to include nostro
+  const scGstLive=Math.round(SC*0.18*100)/100;
+  const scTotalEl=document.getElementById('lblSCTotal');
+  if(scTotalEl)scTotalEl.textContent='₹'+fn(SC+scGstLive+(hasRemitRow?NOSTRO:0));
   if(TYPE==='sale'){
     let totalFX=0;S().rows.forEach(r=>{const c=calcRowData(r);totalFX+=c.forexINR;});
     // Auto TCS only if not all-card
@@ -883,6 +1016,9 @@ function updateBill(){
   }
   renderTCSSection();
   const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  // Show hold button only when there's something to hold
+  const holdBtn=document.getElementById('holdBtn');
+  if(holdBtn)holdBtn.style.display=has?'flex':'none';
   if(!has){inner.innerHTML=`<div class="bill-empty"><svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="opacity:.25;display:block;margin:0 auto 12px"><rect x="6" y="4" width="24" height="28" rx="3" stroke="#1C3829" stroke-width="1.8"/><path d="M11 11h14M11 16h14M11 21h9" stroke="#1C3829" stroke-width="1.8" stroke-linecap="round"/><path d="M23 23l4 4M23 27l4-4" stroke="#1C3829" stroke-width="1.6" stroke-linecap="round"/></svg><p style="font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:6px">No bill yet</p><p style="font-size:12px;line-height:1.6;color:var(--txt3)">Enter a rate and amount<br>to generate a quote</p></div>`;tbar.style.display='none';return;}
   const data=calcAll();
   inner.innerHTML=billHTML(data,{});
@@ -910,7 +1046,7 @@ function updateBill(){
 function nowStr(){return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});}
 
 function billHTML(data,opts){
-  const {computed,totalFX,slab,sc,scGst,tcsAmount,total,pmodes}=data;
+  const {computed,totalFX,slab,sc,scGst,nostro,tcsAmount,total,pmodes}=data;
   const active=computed.filter(r=>r.forexINR>0);
   const slabR=Math.round(slab),scGstR=Math.round(scGst),totalR=Math.round(total);
   const typeLabel=opts.typeLabel||(TYPE==='sale'?'SALE QUOTE':'ENCASHMENT QUOTE');
@@ -960,7 +1096,8 @@ function billHTML(data,opts){
     <div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#2D3748">Goods &amp; Service Tax (Slabwise)</span><span style="font-weight:600;color:#0F1611">${fINR(slabR)}</span></div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#2D3748">Service Charges</span><span style="font-weight:600;color:#0F1611">${fINR(sc)}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;${tcsAmount>0?'border-bottom:1px solid #F0F4F1;':''}font-size:13px"><span style="color:#2D3748">Service Tax @ 18%</span><span style="font-weight:600;color:#0F1611">${fINR(scGstR)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;${(nostro>0||tcsAmount>0)?'border-bottom:1px solid #F0F4F1;':''}font-size:13px"><span style="color:#2D3748">Service Tax @ 18%</span><span style="font-weight:600;color:#0F1611">${fINR(scGstR)}</span></div>
+      ${nostro>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;${tcsAmount>0?'border-bottom:1px solid #F0F4F1;':''}font-size:13px"><span style="color:#2D3748">Nostro Charges</span><span style="font-weight:600;color:#0F1611">${fINR(nostro)}</span></div>`:''}
       ${tcsRow}
     </div>
   </div>
@@ -1008,11 +1145,21 @@ function setCustType(t){
 }
 
 function setSplitCurr(i,code,val){
+  // Store value and update remaining tracker live — but do NOT lock yet
   splitData[i].currAmounts[code]=parseFloat(val)||0;
+  renderSplitRemaining();
+  // Update just the derived INR display for this field without full re-render
+  const derived=splitData[i].currAmounts[code]*(getActiveCurrs().find(c=>c.code===code)||{rate:0}).rate;
+  const derivedEl=document.getElementById(`derived-${i}-${code}`);
+  if(derivedEl){
+    const c=getActiveCurrs().find(x=>x.code===code);
+    if(c){const rv=c.rate;const rd=rv<0.01?5:rv<1?4:2;derivedEl.textContent=derived>0?`× ₹${rv.toFixed(rd)} = ${fINR(derived)}`:`× ₹${rv.toFixed(rd)} = —`;}
+  }
+}
+function blurSplitCurr(i,code){
+  // On blur: lock this split and rebalance others
   splitData[i].locked=true;
   rebalanceSplits(i);
-  renderSplitRemaining();
-  // Re-render all cards (rebalancing changes unlocked splits)
   renderSplitModal();
 }
 function snapSplitCurr(i,code,amt){
@@ -1145,9 +1292,10 @@ function renderSplitCard(i){
         <div class="sp-curr-left"><span class="sp-curr-flag">${c.flag}</span><span class="sp-curr-code">${c.code}</span></div>
         <input class="sp-inp${sp.locked?' locked-inp':''}" type="number" value="${amt||''}" placeholder="0"
           step="${c.dec===0?1:c.dec===3?0.001:0.01}"
-          oninput="setSplitCurr(${i},'${c.code}',this.value)">
+          oninput="setSplitCurr(${i},'${c.code}',this.value)"
+          onblur="blurSplitCurr(${i},'${c.code}')">
       </div>
-      <div class="sp-curr-derived">× ₹${rv.toFixed(rd)} = ${derived>0?fINR(derived):'—'}</div>
+      <div class="sp-curr-derived" id="derived-${i}-${c.code}">× ₹${rv.toFixed(rd)} = ${derived>0?fINR(derived):'—'}</div>
       ${denomHTML}
     </div>`;
   }).join('');
@@ -1179,6 +1327,9 @@ function renderSplitCard(i){
       <span class="sp-num">Split ${i+1} of ${splitCount} ${lockIcon}</span>
       <div class="sp-acts">
         ${unlockBtn}
+        <button class="sp-act" onclick="copySplitImg(${i})" title="Copy for WhatsApp">
+          <svg width="12" height="12" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </button>
         <button class="sp-act" onclick="downloadPDF({splitData:splitBillData(${i}),splitLabel:'Split ${i+1} of ${splitCount}'})" title="Download PDF">
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -1286,7 +1437,36 @@ function copyTxt(){
   const txt=`━━━━━━━━━━━━━━━━━━━━━\nMatrix Forex — ${typeLabel}\n━━━━━━━━━━━━━━━━━━━━━\n${nowStr()}\n\nCURRENCIES:\n${lines}${sub}\n\nCHARGES:\n  G&S Tax (Slabwise)  ${fINR(Math.round(d.slab))}\n  Service Charges     ${fINR(d.sc)}\n  Service Tax (18%)   ${fINR(Math.round(d.scGst))}${tcsLine}\n━━━━━━━━━━━━━━━━━━━━━\n${totalLabel}: ${fINR(Math.round(d.total))}\nPayment: ${d.pmodes.join(' | ')}`;
   navigator.clipboard.writeText(txt).then(()=>toast('✓ Text copied')).catch(()=>toast('Copy failed'));
 }
-// ══════════ RENDER PRINT LAYOUT OFF-SCREEN ══════════
+// ══════════ COPY INVOICE (print layout as PNG) ══════════
+async function copyInvoiceImg(opts){
+  const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(!has){toast('Generate a bill first');return;}
+  if(typeof html2canvas==='undefined'){toast('Library loading, try again');return;}
+  const data=(opts&&opts.splitData)?opts.splitData:calcAll();
+  const billOpts=opts||{};
+  toast('Copying invoice…');
+  try{
+    const snap=document.getElementById('snapTarget');
+    snap.innerHTML=`<div id="print-wrap" style="width:794px;background:#fff;padding:68px 83px 60px 83px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">${printHTML(data,billOpts)}</div>`;
+    await new Promise(r=>setTimeout(r,200));
+    const el=snap.querySelector('#print-wrap');
+    const canvas=await html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:794,windowWidth:794});
+    snap.innerHTML='';
+    canvas.toBlob(async blob=>{
+      if(!blob){toast('Capture failed');return;}
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+        toast('✓ Invoice copied — paste in email!');
+      }catch{
+        const a=document.createElement('a');
+        a.download=`invoice-${Date.now()}.png`;
+        a.href=URL.createObjectURL(blob);a.click();
+        setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+        toast('Invoice saved as PNG');
+      }
+    },'image/png');
+  }catch(e){toast('Error capturing invoice');console.error(e);}
+}
 async function renderPrintLayout(data, opts){
   const snap=document.getElementById('snapTarget');
   // Inject the print HTML into a hidden iframe for clean isolated rendering
@@ -1388,7 +1568,7 @@ function printDateOnly(){
   return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
 }
 function printHTML(data, opts){
-  const {computed,totalFX,slab,sc,scGst,tcsAmount,total,pmodes}=data;
+  const {computed,totalFX,slab,sc,scGst,nostro,tcsAmount,total,pmodes}=data;
   const active=computed.filter(r=>r.forexINR>0);
   const slabR=Math.round(slab), scGstR=Math.round(scGst), totalR=Math.round(total);
   const typeLabel = opts.typeLabel||(TYPE==='sale'?'SALE QUOTE':'ENCASHMENT QUOTE');
@@ -1425,7 +1605,8 @@ function printHTML(data, opts){
   </tr>` : '';
 
   const payTxt = pmodes.join('  ·  ');
-  const totalCharges = slabR + sc + scGstR + tcsAmount;
+  const nostroAmt=nostro||0;
+  const totalCharges = slabR + sc + scGstR + nostroAmt + tcsAmount;
 
   return`<!DOCTYPE html>
 <html lang="en">
@@ -1566,6 +1747,7 @@ body{
         <tr><td class="p-charge-lbl">Goods &amp; Service Tax (Slabwise)</td><td class="p-charge-val">${fINR(slabR)}</td></tr>
         <tr><td class="p-charge-lbl">Service Charges</td><td class="p-charge-val">${fINR(sc)}</td></tr>
         <tr><td class="p-charge-lbl">Service Tax @ 18%</td><td class="p-charge-val">${fINR(scGstR)}</td></tr>
+        ${nostroAmt>0?`<tr><td class="p-charge-lbl">Nostro Charges</td><td class="p-charge-val">${fINR(nostroAmt)}</td></tr>`:''}
         ${tcsRow}
         <tr>
           <td class="p-charge-total-lbl">Total Charges</td>
@@ -1609,7 +1791,7 @@ function fcurr(n,code){const i=CURRENCIES.find(c=>c.code===code)||{dec:2};return
 
 // ══════════ INIT ══════════
 (function(){const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onerror=()=>console.warn('html2canvas not loaded');document.head.appendChild(s);})();
-onSC(250);addRow();
+onSC(250);addRow();renderHoldBar();
 </script>
 </body>
 </html>
