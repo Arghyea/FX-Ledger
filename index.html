@@ -1099,7 +1099,7 @@ function updateBill(){
   const tbar=document.getElementById('tbar');
   renderEncCustBar();
   // Show nostro field only when at least one remittance row has data
-  const hasRemitRow=S().rows.some(r=>(r.txnType||'currency')==='remittance'&&(parseFloat(r.rate)||0)>0);
+  const hasRemitRow=S().rows.some(r=>(r.txnType||'currency')==='remittance');
   const nostroRow=document.getElementById('nostroRow');
   if(nostroRow)nostroRow.style.display=hasRemitRow?'flex':'none';
   // Update total SC label to include nostro
