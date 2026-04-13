@@ -228,14 +228,16 @@ input[type=number]{-moz-appearance:textfield}
 .dl-item:hover .dl-item-icon{background:var(--Gb)}
 
 /* ── HOLD ── */
-.hold-bar{display:none;flex-wrap:wrap;gap:7px;margin-bottom:10px}
-.hold-chip{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--rss);padding:8px 11px 8px 12px;cursor:pointer;transition:all .18s;box-shadow:var(--shadow);min-width:0;max-width:100%}
+.hold-bar{display:none;margin-bottom:10px}
+.hold-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hold-chip{display:flex;align-items:center;gap:6px;background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--rss);padding:7px 8px 7px 10px;cursor:pointer;transition:all .18s;box-shadow:var(--shadow);min-width:0;overflow:hidden}
 .hold-chip:hover{border-color:var(--G);box-shadow:var(--shadow-lg)}
-.hold-chip-info{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
-.hold-chip-label{font-size:12px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hold-chip-total{font-size:11px;color:var(--txt3);font-weight:500}
-.hold-chip-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.8);background:var(--G);border-radius:4px;padding:1px 5px;flex-shrink:0}
-.hold-chip-x{background:none;border:none;color:var(--txt3);cursor:pointer;padding:0 0 0 4px;font-size:15px;line-height:1;flex-shrink:0;transition:color .15s;font-family:inherit}
+.hold-chip-info{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1;overflow:hidden}
+.hold-chip-label{font-size:11.5px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.hold-chip-sub{font-size:10px;color:var(--txt3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hold-chip-tag{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.85);background:var(--G);border-radius:3px;padding:1px 4px;flex-shrink:0;line-height:1.5}
+.hold-chip-tag.enc{background:#0891B2}
+.hold-chip-x{background:none;border:none;color:var(--txt3);cursor:pointer;padding:0;font-size:14px;line-height:1;flex-shrink:0;transition:color .15s;font-family:inherit;margin-left:1px}
 .hold-chip-x:hover{color:#EF4444}
 
 /* ── PICKER ── */
@@ -485,7 +487,7 @@ function switchType(t){
   document.getElementById('tbSale').classList.toggle('on',t==='sale');
   document.getElementById('tbEnc').classList.toggle('on',t==='encashment');
   renderEncCustBar();
-  renderAll();updateBill();
+  renderAll();updateBill();renderHoldBar();
 }
 
 // ══════════ ROW OPS ══════════
@@ -978,78 +980,117 @@ document.addEventListener('click',e=>{
   const wrap=document.querySelector('.dl-wrap');
   if(wrap&&!wrap.contains(e.target))closeDownload();
 });
-let holdSlots=[];
-const MAX_HOLDS=3;
+let holdSale=[],holdEnc=[];
+const MAX_HOLDS_PER_TYPE=6;
+
+function getHoldPool(){return TYPE==='sale'?holdSale:holdEnc;}
+function setHoldPool(arr){if(TYPE==='sale')holdSale=arr;else holdEnc=arr;}
+
+function buildHoldLabel(rows){
+  const active=rows.filter(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(active.length===0)return{line1:'Empty',line2:''};
+  // Group by code and sum amounts
+  const grouped={};
+  active.forEach(r=>{
+    const amt=parseFloat(r.amount)||0;
+    const rate=parseFloat(r.rate)||0;
+    // For INR budget mode, back-calculate currency amount
+    const currAmt=r.mode==='inr'?(rate>0?amt/rate:0):amt;
+    if(!grouped[r.code])grouped[r.code]={code:r.code,amt:0};
+    grouped[r.code].amt+=currAmt;
+  });
+  const entries=Object.values(grouped);
+  const fi=cinfo(entries[0].code);
+  const fmt=(e)=>{
+    const info=cinfo(e.code);
+    const a=e.amt;
+    const dec=info.dec;
+    const s=a>=10000?Math.round(a).toLocaleString('en-IN'):a.toLocaleString('en-IN',{maximumFractionDigits:dec,minimumFractionDigits:0});
+    return`${info.flag} ${e.code} ${s}`;
+  };
+  if(entries.length===1)return{line1:`${fi.flag} ${entries[0].code}`,line2:fmt(entries[0]).split(' ').slice(2).join(' ')};
+  if(entries.length===2)return{line1:fmt(entries[0]),line2:fmt(entries[1])};
+  return{line1:fmt(entries[0]),line2:`+${entries.length-1} more`};
+}
 
 function holdBill(){
   const has=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
   if(!has){toast('Nothing to hold');return;}
-  if(holdSlots.length>=MAX_HOLDS){toast('Max 3 bills on hold');return;}
-  const data=calcAll();
+  const pool=getHoldPool();
+  if(pool.length>=MAX_HOLDS_PER_TYPE){toast('6 bills already on hold');return;}
+  const {line1,line2}=buildHoldLabel(S().rows);
   const snapshot={
     type:TYPE,
     rows:JSON.parse(JSON.stringify(S().rows)),
     sc:SC,nostro:NOSTRO,
     tcs:{tcsEnabled,tcsType,tcsPrior,tcsLoan,tcsMode,tcsFullLRS},
-    label:buildHoldLabel(S().rows),
-    total:Math.round(data.total)
+    line1,line2
   };
-  holdSlots.push(snapshot);
+  pool.push(snapshot);
+  setHoldPool(pool);
   resetCurrent();
   renderHoldBar();
-  toast('Bill held — start new transaction');
+  toast('Bill held');
 }
 
 function restoreHold(idx){
-  const snap=holdSlots[idx];
-  holdSlots.splice(idx,1);
-  // Switch type if needed
-  if(TYPE!==snap.type){
-    TYPE=snap.type;
-    document.getElementById('tbSale').classList.toggle('on',TYPE==='sale');
-    document.getElementById('tbEnc').classList.toggle('on',TYPE==='encashment');
+  const pool=getHoldPool();
+  const snap=pool[idx];
+  // Auto-hold current bill if it has data
+  const hasCurrent=S().rows.some(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
+  if(hasCurrent){
+    if(pool.length>=MAX_HOLDS_PER_TYPE){toast('Hold full — discard a slot first');return;}
+    const {line1,line2}=buildHoldLabel(S().rows);
+    pool.splice(idx,0,{  // insert at same position so order stays predictable
+      type:TYPE,rows:JSON.parse(JSON.stringify(S().rows)),
+      sc:SC,nostro:NOSTRO,
+      tcs:{tcsEnabled,tcsType,tcsPrior,tcsLoan,tcsMode,tcsFullLRS},
+      line1,line2
+    });
+    // snap is now at idx+1
+    pool.splice(idx+1,1);
+  } else {
+    pool.splice(idx,1);
   }
+  setHoldPool(pool);
   // Restore rows
   const st=S();
   st.rows=snap.rows;
   st.uid=Math.max(0,...snap.rows.map(r=>r.id))+1;
-  // Restore charges
   SC=snap.sc;NOSTRO=snap.nostro;
   document.getElementById('inpSC').value=SC;
   const ni=document.getElementById('inpNostro');if(ni)ni.value=NOSTRO;
   const t=SC*0.18;
   document.getElementById('lblSCT').textContent='₹'+fn(t);
-  // Restore TCS
   ({tcsEnabled,tcsType,tcsPrior,tcsLoan,tcsMode,tcsFullLRS}=snap.tcs);
   renderAll();updateBill();renderHoldBar();
   toast('Bill restored');
 }
 
 function discardHold(idx){
-  holdSlots.splice(idx,1);
+  const pool=getHoldPool();
+  pool.splice(idx,1);
+  setHoldPool(pool);
   renderHoldBar();
   toast('Hold discarded');
 }
 
-function buildHoldLabel(rows){
-  const active=rows.filter(r=>(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
-  if(active.length===0)return'Empty';
-  return active.slice(0,2).map(r=>{const fi=cinfo(r.code);return fi.flag+' '+r.code;}).join(' + ')+(active.length>2?' …':'');
-}
-
 function renderHoldBar(){
   const bar=document.getElementById('holdBar');if(!bar)return;
-  if(holdSlots.length===0){bar.style.display='none';return;}
-  bar.style.display='flex';
-  bar.innerHTML=holdSlots.map((s,i)=>`
-    <div class="hold-chip" onclick="restoreHold(${i})" title="Tap to restore">
+  const pool=getHoldPool();
+  if(pool.length===0){bar.style.display='none';return;}
+  bar.style.display='block';
+  const isEnc=TYPE==='encashment';
+  bar.innerHTML=`<div class="hold-grid">${pool.map((s,i)=>{
+    const {line1,line2}=s;
+    return`<div class="hold-chip" onclick="restoreHold(${i})" title="Tap to restore">
       <div class="hold-chip-info">
-        <span class="hold-chip-label">${s.label}</span>
-        <span class="hold-chip-total">${fINR(s.total)}</span>
+        <span class="hold-chip-label">${line1}</span>
+        ${line2?`<span class="hold-chip-sub">${line2}</span>`:''}
       </div>
-      <span class="hold-chip-tag">${s.type==='sale'?'Sale':'Enc'}</span>
       <button class="hold-chip-x" onclick="event.stopPropagation();discardHold(${i})" title="Discard">×</button>
-    </div>`).join('');
+    </div>`;
+  }).join('')}</div>`;
 }
 
 // ══════════ UPDATE BILL ══════════
