@@ -486,6 +486,7 @@ function switchType(t){
   if(t==='encashment'){tcsEnabled=false;tcsMode='manual';tcsType='personal';tcsPrior=0;tcsLoan=0;tcsFullLRS=false;}
   document.getElementById('tbSale').classList.toggle('on',t==='sale');
   document.getElementById('tbEnc').classList.toggle('on',t==='encashment');
+  if(S().rows.length===0)addRow();
   renderEncCustBar();
   renderAll();updateBill();renderHoldBar();
 }
@@ -686,27 +687,31 @@ function buildRow(r){
   const txnType=r.txnType||'currency';
   const isCard=txnType==='card';
   const isRemittance=txnType==='remittance';
+  // INR budget: sale only (both currency and card), not encashment
   const isINR=isSale&&r.mode==='inr'&&(txnType==='currency'||txnType==='card');
   const idx=S().rows.findIndex(x=>x.id===r.id)+1;
   const info=cinfo(r.code);
 
-  // Txn type tag label for header
+  // Type tag in header
   const typeTag=isCard?`<span class="cr-tag cr-tag-card">💳 Card</span>`:isRemittance?`<span class="cr-tag cr-tag-remit">🏦 Remittance</span>`:`<span class="cr-tag">${info.flag} ${r.code}</span>`;
 
-  // Txn type selector (Sale only)
+  // Txn type toggle — Sale: 3 options; Encashment: 2 options (no Remittance)
   const txnBar=isSale?`<div class="txn-type-bar">
     <button class="txn-type-btn${txnType==='currency'?' on':''}" onclick="setTxnType(${r.id},'currency')">Currency</button>
     <button class="txn-type-btn${txnType==='card'?' on':''}" onclick="setTxnType(${r.id},'card')">Forex Card</button>
     <button class="txn-type-btn${txnType==='remittance'?' on':''}" onclick="setTxnType(${r.id},'remittance')">Remittance</button>
-  </div>`:'';
+  </div>`:`<div class="txn-type-bar">
+    <button class="txn-type-btn${txnType==='currency'?' on':''}" onclick="setTxnType(${r.id},'currency')">Currency</button>
+    <button class="txn-type-btn${txnType==='card'?' on':''}" onclick="setTxnType(${r.id},'card')">Forex Card</button>
+  </div>`;
 
-  // Mode bar — currency and card support INR budget
+  // Mode bar (By Amount / By INR Budget) — Sale only, currency + card
   const modeBar=isSale&&(txnType==='currency'||txnType==='card')?`<div class="mode-bar">
     <button class="mode-btn${r.mode==='currency'?' on':''}" onclick="setMode(${r.id},'currency')">By ${isCard?'Card Amount':'Currency Amount'}</button>
     <button class="mode-btn${r.mode==='inr'?' on':''}" onclick="setMode(${r.id},'inr')">By INR Budget</button>
   </div>`:'';
 
-  // Amount input — card non-INR: integer only; INR budget: ₹ prefix; others: normal
+  // Amount input
   const amtLabel=isINR?'INR Budget (₹ load value)':isRemittance?`Amount (${r.code})`:`Amount (${r.code})${isCard&&!isINR?' — whole units only':''}`;
   const amtInput=isINR
     ?`<div class="pfx-wrap"><span class="pfx-sym">₹</span><input class="inp pfx" type="number" placeholder="0" value="${r.amount}" oninput="setField(${r.id},'amount',this.value)"></div>`
