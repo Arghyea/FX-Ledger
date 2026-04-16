@@ -1166,7 +1166,7 @@ function billHTML(data,opts){
   const {computed,totalFX,slab,sc,scGst,nostro,tcsAmount,total,pmodes}=data;
   const active=computed.filter(r=>r.forexINR>0);
   const slabR=Math.round(slab),scGstR=Math.round(scGst),totalR=Math.round(total);
-  const typeLabel=opts.typeLabel||(TYPE==='sale'?'SALE QUOTE':'ENCASHMENT QUOTE');
+  const typeLabel=opts.typeLabel||(TYPE==='sale'?'Sale':'Encashment');
   const totalLabel=opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
   const splitBadge=opts.splitLabel?`<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;letter-spacing:.1em;text-transform:uppercase">${opts.splitLabel}</div>`:'';
   const chips=pmodes.map(m=>`<span style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);display:inline-block">${m}</span>`).join('');
@@ -1194,7 +1194,10 @@ function billHTML(data,opts){
   <div style="background:#1C3829;padding:22px 28px 20px;text-align:center">
     <div style="font-size:11px;letter-spacing:.18em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:8px;font-weight:600">Matrix Forex</div>
     <div style="font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.38);text-transform:uppercase">Foreign Exchange Transaction</div>
-    <div style="display:inline-block;margin-top:12px;padding:4px 18px;border:1px solid rgba(255,255,255,.22);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.12em;color:#fff;background:rgba(255,255,255,.1)">${typeLabel}</div>
+    <div style="display:inline-flex;flex-direction:column;align-items:center;margin-top:14px;gap:3px">
+      <div style="font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff">${typeLabel}</div>
+      <div style="font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.45)">Proforma Invoice</div>
+    </div>
     ${splitBadge}
   </div>
   <div style="padding:20px 28px">
@@ -1349,6 +1352,8 @@ function splitPayModes(total){
 function openSplitModal(){
   if(getActiveCurrs().length===0){toast('Enter currency rate & amount first');return;}
   initSplits();
+  // Always sync split SC to current SC in case it changed since last open
+  splitData.forEach(sp=>sp.sc=SC());
   document.getElementById('splitOverlay').style.display='flex';
   document.getElementById('splitToolbar').style.display=TYPE==='encashment'?'flex':'none';
   renderSplitModal();
@@ -1688,7 +1693,7 @@ function printHTML(data, opts){
   const {computed,totalFX,slab,sc,scGst,nostro,tcsAmount,total,pmodes}=data;
   const active=computed.filter(r=>r.forexINR>0);
   const slabR=Math.round(slab), scGstR=Math.round(scGst), totalR=Math.round(total);
-  const typeLabel = opts.typeLabel||(TYPE==='sale'?'SALE QUOTE':'ENCASHMENT QUOTE');
+  const typeLabel = opts.typeLabel||(TYPE==='sale'?'Sale':'Encashment');
   const totalLabel= opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
   const splitBadge= opts.splitLabel ? `<div class="p-split-badge">${opts.splitLabel}</div>` : '';
 
@@ -1763,7 +1768,7 @@ body{
 .p-co-sub{font-size:7.5pt;letter-spacing:.18em;text-transform:uppercase;color:#555;margin-top:3pt}
 .p-header-right{text-align:right}
 .p-tx-label{font-size:7pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#555;margin-bottom:3pt}
-.p-tx-type{font-size:11pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border:1.5pt solid #000;padding:3pt 12pt;display:inline-block}
+.p-tx-type{font-size:14pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-bottom:2pt solid #000;padding-bottom:3pt;display:inline-block;color:#000}
 .p-date{font-size:9pt;color:#444;margin-top:6pt}
 .p-split-badge{font-size:8pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:4pt}
 
@@ -1835,8 +1840,8 @@ body{
       <div class="p-co-sub">Foreign Exchange Transaction</div>
     </div>
     <div class="p-header-right">
-      <div class="p-tx-label">Transaction Type</div>
       <div class="p-tx-type">${typeLabel}</div>
+      <div style="font-size:7.5pt;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#555;margin-top:3pt">Proforma Invoice</div>
       ${splitBadge}
       <div class="p-date">${printDateOnly()}</div>
     </div>
