@@ -89,41 +89,45 @@ input[type=number]{-moz-appearance:textfield}
 .dh-btn:hover{background:#FEF3C7}
 
 /* ── ADD BTN ── */
-.add-btn{width:100%;padding:13px;border:2px dashed var(--bdr);border-radius:var(--r);background:transparent;font-size:13px;font-weight:600;color:var(--txt3);cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
-.add-btn:hover{border-color:var(--G);color:var(--G);background:var(--Gp)}
+/* ── ADD CURRENCY BUTTON ── */
+.add-btn{width:100%;padding:13px 16px;border:1.5px solid var(--bdr);border-radius:var(--r);background:var(--card);font-size:13px;font-weight:600;color:var(--txt2);cursor:pointer;font-family:inherit;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--shadow)}
+.add-btn:hover{border-color:var(--G);color:var(--G);background:var(--Gp);box-shadow:var(--shadow-lg)}
+.add-btn svg{transition:transform .18s;flex-shrink:0}
+.add-btn:hover svg{transform:rotate(90deg)}
 
 /* ── TCS ── */
 .tcs-trigger{display:flex;align-items:center;justify-content:center;margin-bottom:14px;margin-top:2px}
-.tcs-trigger-btn{background:none;border:1.5px dashed #D6D3D1;font-family:inherit;font-size:12px;font-weight:600;color:#78716C;cursor:pointer;padding:7px 18px;border-radius:8px;transition:all .18s;display:flex;align-items:center;gap:6px}
-.tcs-trigger-btn:hover{background:#F5F5F4;border-color:#A8A29E}
-.tcs-card{background:#FAFAF9;border:1.5px solid #D6D3D1;border-radius:var(--r);padding:16px 18px;margin-bottom:14px;animation:fadeIn .2s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-.tcs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.tcs-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#57534E}
-.tcs-close{background:none;border:none;font-size:13px;color:#A8A29E;cursor:pointer;padding:3px 7px;border-radius:5px;font-family:inherit;font-weight:600;transition:background .15s}
-.tcs-close:hover{background:rgba(120,113,108,.1)}
-.tcs-type-bar{display:flex;gap:2px;background:rgba(120,113,108,.1);border-radius:9px;padding:3px;margin-bottom:12px}
-.tcs-type-btn{flex:1;padding:7px 6px;border:none;border-radius:7px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;background:transparent;color:#78716C;transition:all .18s}
-.tcs-type-btn.on{background:#fff;color:#1C1917;box-shadow:0 1px 4px rgba(0,0,0,.12)}
-.tcs-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13px;border-bottom:1px solid rgba(120,113,108,.12)}
-.tcs-row .tl{color:#78716C;font-weight:500}
-.tcs-row .tv{font-weight:700;color:#44403C}
-.tcs-row .tv.big{font-size:16px;color:#1C1917}
-.tcs-zero{padding:10px 0;font-size:12px;color:#A8A29E;text-align:center;font-weight:500}
-.tcs-field{margin-top:10px;padding-top:10px;border-top:1px solid rgba(120,113,108,.12)}
-.tcs-field-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#78716C;margin-bottom:6px}
-.tcs-field-note{font-size:10px;color:#A8A29E;margin-top:4px;line-height:1.4}
-.tcs-inp{width:100%;padding:8px 12px 8px 22px;border:1.5px solid #D6D3D1;border-radius:var(--rss);font-size:13px;font-weight:600;font-family:inherit;background:#fff;color:var(--txt);outline:none;transition:border-color .18s}
-.tcs-inp:focus{border-color:#78716C}
-.tcs-note{margin-top:10px;padding-top:8px;border-top:1px solid rgba(120,113,108,.12);font-size:11px;color:#A8A29E;line-height:1.5}
+.tcs-trigger-btn{background:none;border:none;font-family:inherit;font-size:12px;font-weight:600;color:var(--txt3);cursor:pointer;padding:6px 10px;border-radius:var(--rss);transition:all .18s;display:flex;align-items:center;gap:5px}
+.tcs-trigger-btn:hover{color:var(--G);background:var(--Gp)}
+.tcs-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r);padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow);animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.tcs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.tcs-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--txt3)}
+.tcs-close{background:none;border:none;font-size:13px;color:var(--txt3);cursor:pointer;padding:2px 6px;border-radius:5px;font-family:inherit;line-height:1;transition:all .15s}
+.tcs-close:hover{background:#FEE2E2;color:#EF4444}
+.tcs-type-bar{display:flex;gap:2px;background:var(--bg);border-radius:9px;padding:3px;margin-bottom:10px}
+.tcs-type-btn{flex:1;padding:6px 6px;border:none;border-radius:7px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;background:transparent;color:var(--txt3);transition:all .18s}
+.tcs-type-btn.on{background:#fff;color:var(--txt);box-shadow:0 1px 4px rgba(0,0,0,.09)}
+.tcs-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--bdr)}
+.tcs-row:last-child{border-bottom:none}
+.tcs-row .tl{color:var(--txt2);font-weight:500}
+.tcs-row .tv{font-weight:700;color:var(--txt)}
+.tcs-row .tv.big{font-size:15px;color:var(--G)}
+.tcs-zero{padding:8px 0;font-size:12px;color:var(--txt3);text-align:center;font-weight:500}
+.tcs-field{margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)}
+.tcs-field-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3);margin-bottom:6px}
+.tcs-field-note{font-size:10px;color:var(--txt3);margin-top:4px;line-height:1.4}
+.tcs-inp{width:100%;padding:7px 12px 7px 22px;border:1.5px solid var(--bdr);border-radius:var(--rss);font-size:13px;font-weight:600;font-family:inherit;background:#fff;color:var(--txt);outline:none;transition:border-color .18s}
+.tcs-inp:focus{border-color:var(--G)}
+.tcs-note{margin-top:10px;padding-top:8px;border-top:1px solid var(--bdr);font-size:11px;color:var(--txt3);line-height:1.5}
 /* Full LRS toggle */
-.tcs-full-lrs-wrap{margin-bottom:12px}
-.tcs-full-lrs-btn{width:100%;text-align:left;background:#F5F5F4;border:1.5px solid #D6D3D1;border-radius:var(--rss);padding:9px 12px;font-family:inherit;font-size:12px;font-weight:600;color:#57534E;cursor:pointer;display:flex;align-items:center;gap:9px;transition:all .18s;line-height:1.4}
-.tcs-full-lrs-btn:hover{border-color:#A8A29E;background:#EEEEEC}
-.tcs-full-lrs-btn.on{background:#1C3829;border-color:#1C3829;color:#fff}
-.tcs-full-lrs-check{width:16px;height:16px;border-radius:4px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;font-weight:700;opacity:.7;transition:all .18s}
-.tcs-full-lrs-btn.on .tcs-full-lrs-check{opacity:1;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.6)}
-.tcs-mode-note{font-size:11px;color:#78716C;margin-bottom:12px;font-weight:500}
+.tcs-full-lrs-wrap{margin-bottom:10px}
+.tcs-full-lrs-btn{width:100%;text-align:left;background:var(--bg);border:1.5px solid var(--bdr);border-radius:var(--rss);padding:8px 12px;font-family:inherit;font-size:12px;font-weight:600;color:var(--txt2);cursor:pointer;display:flex;align-items:center;gap:9px;transition:all .18s;line-height:1.4}
+.tcs-full-lrs-btn:hover{border-color:var(--G);background:var(--Gp)}
+.tcs-full-lrs-btn.on{background:var(--G);border-color:var(--G);color:#fff}
+.tcs-full-lrs-check{width:15px;height:15px;border-radius:4px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;font-weight:700;opacity:.6;transition:all .18s}
+.tcs-full-lrs-btn.on .tcs-full-lrs-check{opacity:1;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5)}
+.tcs-mode-note{font-size:11px;color:var(--txt3);margin-bottom:10px;font-weight:500}
 
 /* ── SPLIT MODAL ── */
 .split-overlay{position:fixed;inset:0;background:rgba(15,22,17,.5);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:14px;overflow-y:auto;backdrop-filter:blur(2px)}
@@ -464,8 +468,10 @@ const SNAP={USD:5,EUR:10,GBP:5,AED:10,SGD:5,THB:50,MYR:5,JPY:1000,IDR:100000,
   CHF:5,NZD:5,RUB:500,DKK:50,SEK:50};
 
 // ══════════ STATE ══════════
-const ST={sale:{rows:[],uid:0},encashment:{rows:[],uid:0}};
-let TYPE='sale', SC=250;
+const ST={sale:{rows:[],uid:0,sc:250},encashment:{rows:[],uid:0,sc:250}};
+let TYPE='sale';
+function SC(){return S().sc;}
+function setSC(v){S().sc=parseFloat(v)||0;}
 function S(){return ST[TYPE];}
 function cinfo(c){return CURRENCIES.find(x=>x.code===c)||CURRENCIES[0];}
 
@@ -486,6 +492,10 @@ function switchType(t){
   if(t==='encashment'){tcsEnabled=false;tcsMode='manual';tcsType='personal';tcsPrior=0;tcsLoan=0;tcsFullLRS=false;}
   document.getElementById('tbSale').classList.toggle('on',t==='sale');
   document.getElementById('tbEnc').classList.toggle('on',t==='encashment');
+  // Sync SC input to this tab's value
+  document.getElementById('inpSC').value=SC();
+  const t2=SC()*0.18;
+  document.getElementById('lblSCT').textContent='₹'+fn(t2);
   if(S().rows.length===0)addRow();
   renderEncCustBar();
   renderAll();updateBill();renderHoldBar();
@@ -543,10 +553,9 @@ function buildHints(r){
 
 // ══════════ SERVICE CHARGE ══════════
 function onSC(v){
-  SC=parseFloat(v)||0;
-  const t=SC*0.18;
+  setSC(v);
+  const t=SC()*0.18;
   document.getElementById('lblSCT').textContent='₹'+fn(t);
-  document.getElementById('lblSCTotal').textContent='₹'+fn(SC+t);
   updateBill();
 }
 function onNostro(v){NOSTRO=parseFloat(v)||0;updateBill();}
@@ -554,7 +563,7 @@ function onNostro(v){NOSTRO=parseFloat(v)||0;updateBill();}
 function resetCurrent(){
   const st=S();
   st.rows=[{id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency',txnType:'currency'}];
-  SC=250;NOSTRO=0;
+  setSC(250);NOSTRO=0;
   document.getElementById('inpSC').value=250;
   const nostroInp=document.getElementById('inpNostro');
   if(nostroInp)nostroInp.value=0;
@@ -665,16 +674,16 @@ function renderEncCustBar(){
   </div>`;
 }
 function calcAll(){
-  const scGst=Math.round(SC*0.18*100)/100;
+  const scGst=Math.round(SC()*0.18*100)/100;
   let totalFX=0;
   const computed=S().rows.map(r=>{const c=calcRowData(r);totalFX+=c.forexINR;return{...r,...c};});
   const slab=slabGST(totalFX);
   const {tcsAmount,taxableExcess}=calcTCS(totalFX);
   const hasRemittance=S().rows.some(r=>(r.txnType||'currency')==='remittance'&&(parseFloat(r.rate)||0)>0&&(parseFloat(r.amount)||0)>0);
   const nostro=hasRemittance?NOSTRO:0;
-  const base=TYPE==='sale'?totalFX+slab+SC+scGst+nostro:totalFX-slab-SC-scGst;
+  const base=TYPE==='sale'?totalFX+slab+SC()+scGst+nostro:totalFX-slab-SC()-scGst;
   const total=base+Math.round(tcsAmount);
-  return{computed,totalFX,slab,sc:SC,scGst,nostro,tcsAmount:Math.round(tcsAmount),taxableExcess:Math.round(taxableExcess),total,pmodes:payModes(total)};
+  return{computed,totalFX,slab,sc:SC(),scGst,nostro,tcsAmount:Math.round(tcsAmount),taxableExcess:Math.round(taxableExcess),total,pmodes:payModes(total)};
 }
 
 function renderAll(){
@@ -1027,7 +1036,7 @@ function holdBill(){
   const snapshot={
     type:TYPE,
     rows:JSON.parse(JSON.stringify(S().rows)),
-    sc:SC,nostro:NOSTRO,
+    sc:SC(),nostro:NOSTRO,
     tcs:{tcsEnabled,tcsType,tcsPrior,tcsLoan,tcsMode,tcsFullLRS},
     line1,line2
   };
@@ -1048,7 +1057,7 @@ function restoreHold(idx){
     const {line1,line2}=buildHoldLabel(S().rows);
     pool.splice(idx,0,{  // insert at same position so order stays predictable
       type:TYPE,rows:JSON.parse(JSON.stringify(S().rows)),
-      sc:SC,nostro:NOSTRO,
+      sc:SC(),nostro:NOSTRO,
       tcs:{tcsEnabled,tcsType,tcsPrior,tcsLoan,tcsMode,tcsFullLRS},
       line1,line2
     });
@@ -1062,10 +1071,10 @@ function restoreHold(idx){
   const st=S();
   st.rows=snap.rows;
   st.uid=Math.max(0,...snap.rows.map(r=>r.id))+1;
-  SC=snap.sc;NOSTRO=snap.nostro;
-  document.getElementById('inpSC').value=SC;
+  setSC(snap.sc);NOSTRO=snap.nostro;
+  document.getElementById('inpSC').value=SC();
   const ni=document.getElementById('inpNostro');if(ni)ni.value=NOSTRO;
-  const t=SC*0.18;
+  const t=SC()*0.18;
   document.getElementById('lblSCT').textContent='₹'+fn(t);
   ({tcsEnabled,tcsType,tcsPrior,tcsLoan,tcsMode,tcsFullLRS}=snap.tcs);
   renderAll();updateBill();renderHoldBar();
@@ -1108,9 +1117,9 @@ function updateBill(){
   const nostroRow=document.getElementById('nostroRow');
   if(nostroRow)nostroRow.style.display=hasRemitRow?'flex':'none';
   // Update total SC label to include nostro
-  const scGstLive=Math.round(SC*0.18*100)/100;
+  const scGstLive=Math.round(SC()*0.18*100)/100;
   const scTotalEl=document.getElementById('lblSCTotal');
-  if(scTotalEl)scTotalEl.textContent='₹'+fn(SC+scGstLive+(hasRemitRow?NOSTRO:0));
+  if(scTotalEl)scTotalEl.textContent='₹'+fn(SC()+scGstLive+(hasRemitRow?NOSTRO:0));
   if(TYPE==='sale'){
     let totalFX=0;S().rows.forEach(r=>{const c=calcRowData(r);totalFX+=c.forexINR;});
     // Auto TCS only if not all-card
@@ -1240,7 +1249,7 @@ function initSplits(){
       const share=+(c.totalCurr/splitCount).toFixed(c.dec);
       currAmounts[c.code]=i<splitCount-1?share:+(c.totalCurr-share*(splitCount-1)).toFixed(c.dec);
     });
-    return{currAmounts,locked:false,sc:SC};
+    return{currAmounts,locked:false,sc:SC()};
   });
 }
 
