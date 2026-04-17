@@ -971,7 +971,13 @@ function renderTCSSection(){
   </div>`;
 }
 
-// ══════════ DOWNLOAD DROPDOWN ══════════
+// Prevent accidental rate/amount changes via arrow keys or scroll wheel on number inputs
+document.addEventListener('keydown',e=>{
+  if((e.key==='ArrowUp'||e.key==='ArrowDown')&&e.target.type==='number')e.preventDefault();
+});
+document.addEventListener('wheel',e=>{
+  if(e.target.type==='number')e.target.blur();
+},{passive:false});
 function toggleDownload(){
   const menu=document.getElementById('dlMenu');
   const trigger=document.getElementById('dlTrigger');
@@ -1166,7 +1172,7 @@ function billHTML(data,opts){
   const {computed,totalFX,slab,sc,scGst,nostro,tcsAmount,total,pmodes}=data;
   const active=computed.filter(r=>r.forexINR>0);
   const slabR=Math.round(slab),scGstR=Math.round(scGst),totalR=Math.round(total);
-  const typeLabel=opts.typeLabel||(TYPE==='sale'?'Sale':'Encashment');
+  const typeLabel=opts.typeLabel||(TYPE==='sale'?'SALE QUOTE':'ENCASHMENT QUOTE');
   const totalLabel=opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
   const splitBadge=opts.splitLabel?`<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;letter-spacing:.1em;text-transform:uppercase">${opts.splitLabel}</div>`:'';
   const chips=pmodes.map(m=>`<span style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);display:inline-block">${m}</span>`).join('');
@@ -1194,10 +1200,7 @@ function billHTML(data,opts){
   <div style="background:#1C3829;padding:22px 28px 20px;text-align:center">
     <div style="font-size:11px;letter-spacing:.18em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:8px;font-weight:600">Matrix Forex</div>
     <div style="font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.38);text-transform:uppercase">Foreign Exchange Transaction</div>
-    <div style="display:inline-flex;flex-direction:column;align-items:center;margin-top:14px;gap:3px">
-      <div style="font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff">${typeLabel}</div>
-      <div style="font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.45)">Proforma Invoice</div>
-    </div>
+    <div style="display:inline-block;margin-top:12px;padding:4px 18px;border:1px solid rgba(255,255,255,.22);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.1)">${typeLabel}</div>
     ${splitBadge}
   </div>
   <div style="padding:20px 28px">
