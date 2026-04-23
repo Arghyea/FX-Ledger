@@ -1517,7 +1517,7 @@ async function copySplitImg(i){
   snap.innerHTML=billHTML(data,{splitLabel:`Split ${i+1} of ${splitCount}`});
   await new Promise(r=>setTimeout(r,120));
   try{
-    const canvas=await html2canvas(snap,{scale:3,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:500,windowWidth:500,
+    const canvas=await html2canvas(snap,{scale:3.5,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:500,windowWidth:500,
       onclone:doc=>{const el=doc.getElementById('snapTarget');if(el){el.style.position='static';el.style.left='0';}}});
     canvas.toBlob(async blob=>{
       if(!blob){toast('Capture failed');return;}
@@ -1554,7 +1554,7 @@ async function copyImg(){
   snap.innerHTML=billHTML(calcAll(),{});
   await new Promise(r=>setTimeout(r,120));
   try{
-    const canvas=await html2canvas(snap,{scale:3,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:500,windowWidth:500,
+    const canvas=await html2canvas(snap,{scale:3.5,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:500,windowWidth:500,
       onclone:doc=>{const el=doc.getElementById('snapTarget');if(el){el.style.position='static';el.style.left='0';}}});
     canvas.toBlob(async blob=>{
       if(!blob){toast('Capture failed');return;}
@@ -1591,7 +1591,7 @@ async function copyInvoiceImg(opts){
     snap.innerHTML=`<div id="print-wrap" style="width:794px;background:#fff;padding:68px 83px 60px 83px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">${printHTML(data,billOpts)}</div>`;
     await new Promise(r=>setTimeout(r,200));
     const el=snap.querySelector('#print-wrap');
-    const canvas=await html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:794,windowWidth:794});
+    const canvas=await html2canvas(el,{scale:2.5,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:794,windowWidth:794});
     snap.innerHTML='';
     canvas.toBlob(async blob=>{
       if(!blob){toast('Capture failed');return;}
@@ -1641,7 +1641,7 @@ async function downloadPDF(opts){
     await new Promise(r=>setTimeout(r,200));
     const el=snap.querySelector('#print-wrap');
     const canvas=await html2canvas(el,{
-      scale:1.5, useCORS:true, allowTaint:true, backgroundColor:'#fff',
+      scale:2, useCORS:true, allowTaint:true, backgroundColor:'#fff',
       logging:false, width:794, windowWidth:794
     });
     snap.innerHTML='';
@@ -1657,7 +1657,7 @@ async function downloadPDF(opts){
     }
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const imgData=canvas.toDataURL('image/jpeg',0.85);
+    const imgData=canvas.toDataURL('image/jpeg',0.92);
     const pdfW=pdf.internal.pageSize.getWidth();
     const pdfH=(canvas.height/canvas.width)*pdfW;
     pdf.addImage(imgData,'JPEG',0,0,pdfW,Math.min(pdfH,pdf.internal.pageSize.getHeight()));
@@ -1686,7 +1686,7 @@ async function downloadPNG(opts){
     await new Promise(r=>setTimeout(r,200));
     const el=snap.querySelector('#print-wrap');
     const canvas=await html2canvas(el,{
-      scale:2, useCORS:true, allowTaint:true, backgroundColor:'#fff',
+      scale:2.5, useCORS:true, allowTaint:true, backgroundColor:'#fff',
       logging:false, width:794, windowWidth:794
     });
     snap.innerHTML='';
@@ -1722,10 +1722,10 @@ function printHTML(data, opts){
     const fi=cinfo(r.code);
     const txnType=r.txnType||'currency';
     const currLabel=txnType==='card'
-      ?`<strong>Forex Card</strong> <span style="color:#666;font-style:italic">&#x2014; ${r.code}</span>`
+      ?`<strong>Forex Card</strong> <span style="font-family:Georgia,serif;color:#666;font-style:italic">&#x2014; ${r.code}</span>`
       :txnType==='remittance'
-      ?`<strong>Remittance</strong> <span style="color:#666;font-style:italic">&#x2014; ${r.code}</span>`
-      :`<strong>${fi.code}</strong> <span style="color:#666;font-style:italic">&#x2014; ${fi.name}</span>`;
+      ?`<strong>Remittance</strong> <span style="font-family:Georgia,serif;color:#666;font-style:italic">&#x2014; ${r.code}</span>`
+      :`<strong>${fi.code}</strong> <span style="font-family:Georgia,serif;color:#666;font-style:italic">&#x2014; ${fi.name}</span>`;
     return`<tr>
       <td style="padding:9pt 0;border-bottom:.5pt solid #D0D0D0;font-size:10pt">${currLabel}</td>
       <td style="padding:9pt 8pt;border-bottom:.5pt solid #D0D0D0;font-size:10pt;text-align:right">${fcurr(r.currAmt,r.code)}</td>
@@ -1744,7 +1744,7 @@ function printHTML(data, opts){
   const payTxt=pmodes.join('  \u00B7  ');
 
   const chargeR=(label,sub,val)=>`<tr>
-    <td style="padding:8pt 0;border-bottom:.5pt solid #E0E0E0;font-size:10pt;width:70%">${label}${sub?` <span style="font-style:italic;color:#666;font-size:9pt">\u00B7 ${sub}</span>`:''}</td>
+    <td style="padding:8pt 0;border-bottom:.5pt solid #E0E0E0;font-size:10pt;width:70%">${label}${sub?` <span style="font-family:Georgia,serif;font-style:italic;color:#666;font-size:9pt">\u00B7 ${sub}</span>`:''}</td>
     <td style="padding:8pt 0 8pt 8pt;border-bottom:.5pt solid #E0E0E0;font-size:10pt;text-align:right;font-weight:600;width:30%">${val}</td>
   </tr>`;
 
@@ -1846,7 +1846,7 @@ table{border-collapse:collapse;width:100%}
 
   <!-- FOOTER -->
   <div style="border-top:1pt solid #CCC;padding-top:8pt;display:flex;justify-content:space-between;align-items:flex-start">
-    <div style="font-size:8pt;color:#666;font-style:italic;line-height:1.6;max-width:68%">This proforma invoice is issued for reference and quotation purposes only. It does not constitute an official tax invoice, receipt, or bill of any kind.</div>
+    <div style="font-size:8pt;font-family:Georgia,serif;color:#666;font-style:italic;line-height:1.6;max-width:68%">This proforma invoice is issued for reference and quotation purposes only. It does not constitute an official tax invoice, receipt, or bill of any kind.</div>
     <div style="font-size:7pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#999;text-align:right">Matrix Forex<br>Foreign Exchange</div>
   </div>
 
