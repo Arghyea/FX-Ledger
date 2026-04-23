@@ -1174,68 +1174,84 @@ function billHTML(data,opts){
   const slabR=Math.round(slab),scGstR=Math.round(scGst),totalR=Math.round(total);
   const typeLabel=opts.typeLabel||(TYPE==='sale'?'SALE QUOTE':'ENCASHMENT QUOTE');
   const totalLabel=opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
-  const splitBadge=opts.splitLabel?`<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;letter-spacing:.1em;text-transform:uppercase">${opts.splitLabel}</div>`:'';
-  const chips=pmodes.map(m=>`<span style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);display:inline-block">${m}</span>`).join('');
+  const splitBadge=opts.splitLabel?`<div style="font-size:9px;color:#999;letter-spacing:.12em;text-transform:uppercase;margin-top:4px">${opts.splitLabel}</div>`:'';
+
   const tRows=active.map(r=>{
     const rv=parseFloat(r.rate)||0;const rd=rv<0.01?5:rv<1?4:2;
     const fi=cinfo(r.code);
     const txnType=r.txnType||'currency';
-    const currLabel=txnType==='card'
-      ?`<span style="font-weight:700;color:#1C3829">💳 Forex Card</span><span style="font-size:11px;color:#6B7A72;margin-left:4px">— ${r.code}</span>`
-      :txnType==='remittance'
-      ?`<span style="font-weight:700;color:#1C3829">🏦 Remittance</span><span style="font-size:11px;color:#6B7A72;margin-left:4px">— ${r.code}</span>`
-      :`<span style="font-weight:700;color:#1C3829;display:inline-flex;align-items:center;gap:4px"><span style="font-size:14px">${fi.flag}</span><span>${r.code}</span></span>`;
+    const nameItalic=txnType==='card'?'Forex Card':txnType==='remittance'?'Remittance':fi.name;
+    const codeDisplay=txnType==='card'?`\u{1F4B3} ${r.code}`:txnType==='remittance'?`\u{1F3E6} ${r.code}`:`${fi.flag} ${fi.code}`;
     return`<tr>
-      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px">${currLabel}</td>
-      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;color:#1A202C;font-weight:500">${fcurr(r.currAmt,r.code)}</td>
-      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;color:#1A202C;font-weight:500">₹${rv.toFixed(rd)}</td>
-      <td style="padding:10px 6px;border-bottom:1px solid #E8EDED;font-size:13px;text-align:right;font-weight:700;color:#0F1611">${fINR(r.forexINR)}</td>
+      <td style="padding:12px 0;vertical-align:top;border-bottom:1px solid #EBEBEB">
+        <div style="font-size:13.5px;font-weight:700;color:#0F1611">${codeDisplay}</div>
+        <div style="font-size:11px;color:#888;font-style:italic;margin-top:2px">${nameItalic}</div>
+      </td>
+      <td style="padding:12px 8px;text-align:right;font-size:13px;color:#1A1A1A;vertical-align:top;border-bottom:1px solid #EBEBEB">${fcurr(r.currAmt,r.code)}</td>
+      <td style="padding:12px 8px;text-align:right;font-size:13px;color:#1A1A1A;vertical-align:top;border-bottom:1px solid #EBEBEB">\u20B9${rv.toFixed(rd)}</td>
+      <td style="padding:12px 0 12px 8px;text-align:right;font-size:13px;font-weight:700;color:#0F1611;vertical-align:top;border-bottom:1px solid #EBEBEB">${fINR(r.forexINR)}</td>
     </tr>`;
   }).join('');
-  const sub=active.length>1?`<tr><td colspan="3" style="padding:10px 6px 6px;font-weight:700;border-top:2px solid #1C3829;font-size:13px">Subtotal</td><td style="padding:10px 6px 6px;text-align:right;font-weight:700;border-top:2px solid #1C3829;font-size:13px">${fINR(totalFX)}</td></tr>`:'';
-  const tcsRow=tcsAmount>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;font-size:13px;background:#F5F5F4;border-radius:4px;margin-top:2px">
-    <span style="color:#57534E;font-weight:600">TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})</span>
-    <span style="font-weight:700;color:#1C1917;font-size:14px">${fINR(tcsAmount)}</span></div>`:'';
-  return`<div style="font-family:'DM Sans',sans-serif;background:#fff">
-  <div style="background:#1C3829;padding:22px 28px 20px;text-align:center">
-    <div style="font-size:11px;letter-spacing:.18em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:8px;font-weight:600">Matrix Forex</div>
-    <div style="font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.38);text-transform:uppercase">Foreign Exchange Transaction</div>
-    <div style="display:inline-block;margin-top:12px;padding:4px 18px;border:1px solid rgba(255,255,255,.22);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.1)">${typeLabel}</div>
-    ${splitBadge}
-  </div>
-  <div style="padding:20px 28px">
-    <div style="font-size:11px;color:#6B7A72;text-align:right;margin-bottom:16px">${nowStr()}</div>
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6B7A72;padding-bottom:7px;border-bottom:1px solid #E2E8E4">Currencies</div>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:18px">
+
+  const sub=active.length>1?`<tr>
+    <td colspan="3" style="padding:10px 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#888">Subtotal</td>
+    <td style="padding:10px 0 4px 8px;text-align:right;font-size:13px;font-weight:700;color:#0F1611">${fINR(totalFX)}</td>
+  </tr>`:'';
+
+  const chargeRow=(label,val,last=false)=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;${last?'':'border-bottom:1px solid #F0F0F0;'}"><span style="font-size:13px;color:#444">${label}</span><span style="font-size:13px;font-weight:600;color:#0F1611">${val}</span></div>`;
+
+  const charges=[
+    chargeRow('Goods &amp; Service Tax \u00B7 Slabwise',fINR(slabR),false),
+    chargeRow('Service Charges',fINR(sc),false),
+    chargeRow('Service Tax @ 18%',fINR(scGstR),nostro===0&&tcsAmount===0),
+    nostro>0?chargeRow('Nostro Charges',fINR(nostro),tcsAmount===0):'',
+    tcsAmount>0?chargeRow(`TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})`,fINR(tcsAmount),true):'',
+  ].join('');
+
+  const payText=pmodes.join(' \u00B7 ');
+
+  const sL=(t)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:0"><span style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#888;white-space:nowrap">${t}</span><div style="flex:1;height:1px;background:#D8D8D8"></div></div>`;
+
+  return`<div style="font-family:'DM Sans',sans-serif;background:#fff;border-radius:inherit">
+  <div style="padding:24px 26px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:#0F1611;letter-spacing:-.3px;line-height:1.1">Matrix Forex</div>
+        <div style="font-size:8.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#666;margin-top:4px">RBI Authorised Dealer</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0F1611;border-bottom:1.5px solid #0F1611;padding-bottom:3px;display:inline-block">${typeLabel}</div>
+        ${splitBadge}
+        <div style="font-size:11px;color:#888;font-style:italic;margin-top:6px">${nowStr()}</div>
+      </div>
+    </div>
+    <div style="height:1px;background:#1A1A1A;margin-bottom:18px"></div>
+    ${sL('Currencies Exchanged')}
+    <table style="width:100%;border-collapse:collapse;margin-top:4px;margin-bottom:18px">
       <thead><tr>
-        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A72;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Currency</th>
-        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A72;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Amount</th>
-        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A72;padding:8px 6px 6px;text-align:left;border-bottom:1px solid #E2E8E4">Rate</th>
-        <th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7A72;padding:8px 6px 6px;text-align:right;border-bottom:1px solid #E2E8E4">INR</th>
+        <th style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#AAA;padding:7px 0;text-align:left;border-bottom:1px solid #D8D8D8">Currency</th>
+        <th style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#AAA;padding:7px 8px;text-align:right;border-bottom:1px solid #D8D8D8">Amount</th>
+        <th style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#AAA;padding:7px 8px;text-align:right;border-bottom:1px solid #D8D8D8">Rate</th>
+        <th style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#AAA;padding:7px 0 7px 8px;text-align:right;border-bottom:1px solid #D8D8D8">INR</th>
       </tr></thead>
       <tbody>${tRows}${sub}</tbody>
     </table>
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6B7A72;padding-bottom:7px;border-bottom:1px solid #E2E8E4">Charges</div>
-    <div style="margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#2D3748">Goods &amp; Service Tax (Slabwise)</span><span style="font-weight:600;color:#0F1611">${fINR(slabR)}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F4F1;font-size:13px"><span style="color:#2D3748">Service Charges</span><span style="font-weight:600;color:#0F1611">${fINR(sc)}</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;${(nostro>0||tcsAmount>0)?'border-bottom:1px solid #F0F4F1;':''}font-size:13px"><span style="color:#2D3748">Service Tax @ 18%</span><span style="font-weight:600;color:#0F1611">${fINR(scGstR)}</span></div>
-      ${nostro>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;${tcsAmount>0?'border-bottom:1px solid #F0F4F1;':''}font-size:13px"><span style="color:#2D3748">Nostro Charges</span><span style="font-weight:600;color:#0F1611">${fINR(nostro)}</span></div>`:''}
-      ${tcsRow}
+    ${sL('Charges &amp; Taxes')}
+    <div style="margin-top:2px;margin-bottom:4px">${charges}</div>
+    <div style="height:1px;background:#1A1A1A;margin:14px 0"></div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px">
+      <span style="font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0F1611">${totalLabel}</span>
+      <span style="font-family:'DM Sans',sans-serif;font-size:30px;font-weight:700;color:#6B1E1E;letter-spacing:-.5px">${fINR(totalR)}</span>
+    </div>
+    <div style="border-top:1px solid #EBEBEB;padding-top:12px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#AAA;margin-bottom:5px">Mode of Payment</div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0F1611">${payText}</div>
     </div>
   </div>
-  <div style="background:#1C3829;padding:18px 28px">
-    <div style="display:flex;align-items:baseline;justify-content:space-between">
-      <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.07em">${totalLabel}</span>
-      <span style="font-family:'DM Sans',sans-serif;font-size:34px;font-weight:700;color:#fff;letter-spacing:-.5px">${fINR(totalR)}</span>
-    </div>
+  <div style="border-top:1px solid #EBEBEB;padding:10px 26px 12px">
+    <div style="font-size:10px;color:#6B6B6B;font-style:italic;line-height:1.5">Forex rates are dynamic and reflect current market pricing at the time of issue.</div>
   </div>
-  <div style="background:#1C3829;padding:0 28px 18px">
-    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.38);margin-bottom:8px">Mode of Payment</div>
-    <div style="display:flex;gap:7px;flex-wrap:wrap">${chips}</div>
-  </div>
-</div>`;
-}
+</div>`;}
 
 // ══════════ SPLIT FEATURE ══════════
 function getActiveCurrs(){
@@ -1696,9 +1712,9 @@ function printHTML(data, opts){
   const {computed,totalFX,slab,sc,scGst,nostro,tcsAmount,total,pmodes}=data;
   const active=computed.filter(r=>r.forexINR>0);
   const slabR=Math.round(slab), scGstR=Math.round(scGst), totalR=Math.round(total);
-  const typeLabel = opts.typeLabel||(TYPE==='sale'?'Sale':'Encashment');
+  const typeLabel = opts.typeLabel||(TYPE==='sale'?'SALE':'ENCASHMENT');
   const totalLabel= opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
-  const splitBadge= opts.splitLabel ? `<div class="p-split-badge">${opts.splitLabel}</div>` : '';
+  const splitBadge= opts.splitLabel ? `<div style="font-size:7pt;letter-spacing:.1em;text-transform:uppercase;color:#777;margin-top:3pt">${opts.splitLabel}</div>` : '';
 
   const tRows = active.map(r=>{
     const rv=parseFloat(r.rate)||0;
@@ -1706,204 +1722,135 @@ function printHTML(data, opts){
     const fi=cinfo(r.code);
     const txnType=r.txnType||'currency';
     const currLabel=txnType==='card'
-      ?`<strong>Forex Card</strong><span class="p-curr-full"> — ${r.code}</span>`
+      ?`<strong>Forex Card</strong> <span style="color:#666;font-style:italic">&#x2014; ${r.code}</span>`
       :txnType==='remittance'
-      ?`<strong>Remittance</strong><span class="p-curr-full"> — ${r.code}</span>`
-      :`${fi.flag} ${fi.code}<span class="p-curr-full"> — ${fi.name}</span>`;
+      ?`<strong>Remittance</strong> <span style="color:#666;font-style:italic">&#x2014; ${r.code}</span>`
+      :`<strong>${fi.code}</strong> <span style="color:#666;font-style:italic">&#x2014; ${fi.name}</span>`;
     return`<tr>
-      <td class="p-td p-curr-name">${currLabel}</td>
-      <td class="p-td p-right">${fcurr(r.currAmt,r.code)}</td>
-      <td class="p-td p-right">₹${rv.toFixed(rd)}</td>
-      <td class="p-td p-right p-bold">${fINR(r.forexINR)}</td>
+      <td style="padding:9pt 0;border-bottom:.5pt solid #D0D0D0;font-size:10pt">${currLabel}</td>
+      <td style="padding:9pt 8pt;border-bottom:.5pt solid #D0D0D0;font-size:10pt;text-align:right">${fcurr(r.currAmt,r.code)}</td>
+      <td style="padding:9pt 8pt;border-bottom:.5pt solid #D0D0D0;font-size:10pt;text-align:right">${rv.toFixed(rd)}</td>
+      <td style="padding:9pt 0 9pt 8pt;border-bottom:.5pt solid #D0D0D0;font-size:10pt;text-align:right;font-weight:700">${fINR(r.forexINR)}</td>
     </tr>`;
   }).join('');
 
-  const subRow = active.length>1 ? `
-    <tr class="p-subtotal-row">
-      <td colspan="3"><strong>Subtotal (${active.length} currencies)</strong></td>
-      <td class="p-right"><strong>${fINR(totalFX)}</strong></td>
-    </tr>` : '';
-
-  const tcsRow = tcsAmount>0 ? `<tr>
-    <td class="p-charge-lbl">TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})</td>
-    <td class="p-charge-val">${fINR(tcsAmount)}</td>
+  const subRow = active.length>1 ? `<tr>
+    <td colspan="3" style="padding:8pt 0 4pt;font-size:8.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#555">Subtotal</td>
+    <td style="padding:8pt 0 4pt 8pt;text-align:right;font-size:10pt;font-weight:700">${fINR(totalFX)}</td>
   </tr>` : '';
 
-  const payTxt = pmodes.join('  ·  ');
   const nostroAmt=nostro||0;
-  const totalCharges = slabR + sc + scGstR + nostroAmt + tcsAmount;
+  const totalCharges=slabR+sc+scGstR+nostroAmt+tcsAmount;
+  const payTxt=pmodes.join('  \u00B7  ');
+
+  const chargeR=(label,sub,val)=>`<tr>
+    <td style="padding:8pt 0;border-bottom:.5pt solid #E0E0E0;font-size:10pt;width:70%">${label}${sub?` <span style="font-style:italic;color:#666;font-size:9pt">\u00B7 ${sub}</span>`:''}</td>
+    <td style="padding:8pt 0 8pt 8pt;border-bottom:.5pt solid #E0E0E0;font-size:10pt;text-align:right;font-weight:600;width:30%">${val}</td>
+  </tr>`;
+
+  const tcsLabel=tcsAmount>0?chargeR(`TCS @ ${tcsType==='education'?'2%':'20%'}`,tcsType==='education'?'Education':'Personal',fINR(tcsAmount)):'';
 
   return`<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <title>&#8203;</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-/* Using real @page margins suppresses Chrome's built-in header/footer (time, URL, page number) */
-@page{
-  size:A4 portrait;
-  margin:18mm 22mm 16mm 22mm;
-}
+@page{size:A4 portrait;margin:18mm 22mm 16mm 22mm;}
 @media print{
   a[href]:after,a[href]::after{content:''!important;display:none!important}
   abbr[title]:after{content:''!important}
 }
 html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
-  font-size:10.5pt;
-  color:#000;
-  background:#fff;
-  /* No body padding — @page margins handle spacing */
-}
-
-/* ── HEADER ── */
-.p-header{
-  border-bottom:2pt solid #000;
-  padding-bottom:10pt;
-  margin-bottom:16pt;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-}
-.p-co-name{font-size:20pt;font-weight:700;letter-spacing:-.3px;line-height:1.1}
-.p-co-sub{font-size:7.5pt;letter-spacing:.18em;text-transform:uppercase;color:#555;margin-top:3pt}
-.p-header-right{text-align:right}
-.p-tx-label{font-size:7pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#555;margin-bottom:3pt}
-.p-tx-type{font-size:14pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-bottom:2pt solid #000;padding-bottom:3pt;display:inline-block;color:#000}
-.p-date{font-size:9pt;color:#444;margin-top:6pt}
-.p-split-badge{font-size:8pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:4pt}
-
-/* ── SECTION LABEL ── */
-.p-section{margin-bottom:14pt}
-.p-section-lbl{
-  display:block;font-size:7.5pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:#000;padding-bottom:3pt;border-bottom:1.5pt solid #000;margin-bottom:0;
-}
-
-/* ── CURRENCY TABLE ── */
-.p-table{width:100%;border-collapse:collapse}
-.p-th{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
-  color:#333;padding:5pt 6pt;border-bottom:1pt solid #888;text-align:left}
-.p-th.p-right{text-align:right}
-.p-td{font-size:10.5pt;padding:6pt 6pt;border-bottom:.5pt solid #ccc;vertical-align:middle}
-.p-curr-name{font-weight:700}
-.p-curr-full{font-weight:400;color:#555;font-size:9pt}
-.p-right{text-align:right}
-.p-bold{font-weight:700}
-.p-subtotal-row td{
-  border-top:1.2pt solid #000;border-bottom:1.2pt solid #000;
-  padding:5pt 6pt;font-size:10.5pt;font-weight:600;
-}
-
-/* ── CHARGES TABLE ── */
-.p-charges-table{width:100%;border-collapse:collapse}
-.p-charge-lbl{font-size:10pt;padding:5pt 0;border-bottom:.5pt solid #ddd;width:75%}
-.p-charge-val{font-size:10pt;padding:5pt 0;border-bottom:.5pt solid #ddd;text-align:right;font-weight:600;width:25%}
-.p-charge-total-lbl{font-size:10.5pt;padding:7pt 0 0;font-weight:700;border-top:1.2pt solid #000;width:75%}
-.p-charge-total-val{font-size:10.5pt;padding:7pt 0 0;text-align:right;font-weight:700;border-top:1.2pt solid #000;width:25%}
-
-/* ── TOTAL BOX — sits directly after charges table ── */
-.p-total-box{
-  border:2pt solid #000;
-  padding:10pt 14pt;
-  margin-top:12pt;
-  margin-bottom:8pt;
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
-}
-.p-total-lbl{font-size:8pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
-.p-total-amt{font-size:22pt;font-weight:700;letter-spacing:-.5px}
-
-/* ── PAYMENT ── */
-.p-payment-lbl{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#555;margin-bottom:3pt}
-.p-payment-val{font-size:10pt;font-weight:600}
-
-/* ── FOOTER ── */
-.p-footer{
-  border-top:1pt solid #aaa;
-  margin-top:20pt;
-  padding-top:7pt;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-}
-.p-disclaimer{font-size:8pt;color:#555;font-style:italic;line-height:1.6;max-width:72%}
-.p-footer-co{font-size:7.5pt;color:#888;text-align:right;white-space:nowrap;line-height:1.6}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0A0A0A;background:#fff}
+.serif{font-family:'Playfair Display',Georgia,'Times New Roman',serif}
+table{border-collapse:collapse;width:100%}
 </style>
 </head>
 <body>
 
-  <!-- HEADER: company left · type + date right -->
-  <div class="p-header">
-    <div>
-      <div class="p-co-name">Matrix Forex</div>
-      <div class="p-co-sub">Foreign Exchange Transaction</div>
+  <!-- MASTHEAD -->
+  <div style="margin-bottom:10pt">
+    <div class="serif" style="font-size:26pt;font-weight:700;letter-spacing:-.3px;line-height:1;color:#0A0A0A">Matrix Forex</div>
+    <div style="font-size:7.5pt;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#666;margin-top:5pt">RBI Authorised Dealer</div>
+  </div>
+  <div style="border-top:2.5pt solid #0A0A0A;border-bottom:1pt solid #0A0A0A;padding:1.5pt 0;margin-bottom:14pt"></div>
+
+  <!-- PROFORMA INVOICE TITLE -->
+  <div style="display:flex;align-items:center;gap:12pt;margin-bottom:14pt">
+    <div style="flex:1;height:.75pt;background:#999"></div>
+    <div class="serif" style="font-size:11pt;font-weight:700;letter-spacing:.28em;text-transform:uppercase;white-space:nowrap;color:#0A0A0A">Proforma Invoice</div>
+    <div style="flex:1;height:.75pt;background:#999"></div>
+  </div>
+
+  <!-- DATE / TRANSACTION META -->
+  <div style="display:flex;justify-content:flex-end;margin-bottom:18pt;gap:16pt">
+    <div style="text-align:right">
+      <div style="font-size:7pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:2pt">Date of Issue</div>
+      <div style="font-size:10pt;font-weight:600;color:#0A0A0A">${printDateOnly()}</div>
     </div>
-    <div class="p-header-right">
-      <div class="p-tx-type">${typeLabel}</div>
-      <div style="font-size:7.5pt;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#555;margin-top:3pt">Proforma Invoice</div>
+    <div style="text-align:right">
+      <div style="font-size:7pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:2pt">Transaction</div>
+      <div style="font-size:10pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0A0A0A">${typeLabel}</div>
       ${splitBadge}
-      <div class="p-date">${printDateOnly()}</div>
     </div>
   </div>
 
-  <!-- CURRENCIES -->
-  <div class="p-section">
-    <span class="p-section-lbl">Currencies Exchanged</span>
-    <table class="p-table">
+  <!-- SECTION I: CURRENCIES -->
+  <div style="margin-bottom:16pt">
+    <div style="font-size:7.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0A0A0A;margin-bottom:4pt">I &middot; Currencies Exchanged</div>
+    <div style="border-bottom:1.2pt solid #0A0A0A;margin-bottom:0"></div>
+    <table>
       <thead><tr>
-        <th class="p-th" style="width:38%">Currency</th>
-        <th class="p-th p-right" style="width:20%">Amount</th>
-        <th class="p-th p-right" style="width:22%">Rate (₹ per unit)</th>
-        <th class="p-th p-right" style="width:20%">INR Value</th>
+        <th style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#666;padding:6pt 0;text-align:left;border-bottom:.75pt solid #B0B0B0;width:38%">Currency</th>
+        <th style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#666;padding:6pt 8pt;text-align:right;border-bottom:.75pt solid #B0B0B0;width:20%">Amount</th>
+        <th style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#666;padding:6pt 8pt;text-align:right;border-bottom:.75pt solid #B0B0B0;width:22%">Rate (&#8377;)</th>
+        <th style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#666;padding:6pt 0 6pt 8pt;text-align:right;border-bottom:.75pt solid #B0B0B0;width:20%">INR Value</th>
       </tr></thead>
       <tbody>${tRows}${subRow}</tbody>
     </table>
   </div>
 
-  <!-- CHARGES then TOTAL directly below -->
-  <div class="p-section">
-    <span class="p-section-lbl">Charges &amp; Taxes</span>
-    <table class="p-charges-table">
+  <!-- SECTION II: CHARGES -->
+  <div style="margin-bottom:14pt">
+    <div style="font-size:7.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0A0A0A;margin-bottom:4pt">II &middot; Charges &amp; Taxes</div>
+    <div style="border-bottom:1.2pt solid #0A0A0A;margin-bottom:0"></div>
+    <table>
       <tbody>
-        <tr><td class="p-charge-lbl">Goods &amp; Service Tax (Slabwise)</td><td class="p-charge-val">${fINR(slabR)}</td></tr>
-        <tr><td class="p-charge-lbl">Service Charges</td><td class="p-charge-val">${fINR(sc)}</td></tr>
-        <tr><td class="p-charge-lbl">Service Tax @ 18%</td><td class="p-charge-val">${fINR(scGstR)}</td></tr>
-        ${nostroAmt>0?`<tr><td class="p-charge-lbl">Nostro Charges</td><td class="p-charge-val">${fINR(nostroAmt)}</td></tr>`:''}
-        ${tcsRow}
+        ${chargeR('Goods &amp; Service Tax','Slabwise',fINR(slabR))}
+        ${chargeR('Service Charges','',fINR(sc))}
+        ${chargeR('Service Tax','18% on service charges',fINR(scGstR))}
+        ${nostroAmt>0?chargeR('Nostro Charges','',fINR(nostroAmt)):''}
+        ${tcsLabel}
         <tr>
-          <td class="p-charge-total-lbl">Total Charges</td>
-          <td class="p-charge-total-val">${fINR(totalCharges)}</td>
+          <td style="padding:8pt 0 0;font-size:10pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-top:1pt solid #0A0A0A">Total Charges</td>
+          <td style="padding:8pt 0 0 8pt;text-align:right;font-size:10pt;font-weight:700;border-top:1pt solid #0A0A0A">${fINR(totalCharges)}</td>
         </tr>
       </tbody>
     </table>
+  </div>
 
-    <!-- TOTAL PAYABLE — immediately below charges -->
-    <div class="p-total-box">
-      <span class="p-total-lbl">${totalLabel}</span>
-      <span class="p-total-amt">${fINR(totalR)}</span>
-    </div>
+  <!-- TOTAL PAYABLE -->
+  <div style="border-top:1.5pt solid #0A0A0A;border-bottom:1.5pt solid #0A0A0A;padding:10pt 0;margin-bottom:14pt;display:flex;justify-content:space-between;align-items:baseline">
+    <span style="font-size:8pt;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#0A0A0A">${totalLabel}</span>
+    <span class="serif" style="font-size:26pt;font-weight:700;letter-spacing:-.5px;color:#0A0A0A">${fINR(totalR)}</span>
+  </div>
 
-    <!-- PAYMENT METHODS -->
-    <div>
-      <div class="p-payment-lbl">Mode of Payment</div>
-      <div class="p-payment-val">${payTxt}</div>
-    </div>
+  <!-- MODE OF PAYMENT -->
+  <div style="margin-bottom:20pt">
+    <div style="font-size:7pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#888;margin-bottom:4pt">Mode of Payment</div>
+    <div style="font-size:10pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0A0A0A">${payTxt}</div>
   </div>
 
   <!-- FOOTER -->
-  <div class="p-footer">
-    <div class="p-disclaimer">
-      This is a Proforma Invoice and is issued for reference purposes only.
-      It does not constitute an official tax invoice or receipt.
-    </div>
-    <div class="p-footer-co">Matrix Forex<br>Foreign Exchange</div>
+  <div style="border-top:1pt solid #CCC;padding-top:8pt;display:flex;justify-content:space-between;align-items:flex-start">
+    <div style="font-size:8pt;color:#666;font-style:italic;line-height:1.6;max-width:68%">This proforma invoice is issued for reference and quotation purposes only. It does not constitute an official tax invoice, receipt, or bill of any kind.</div>
+    <div style="font-size:7pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#999;text-align:right">Matrix Forex<br>Foreign Exchange</div>
   </div>
 
-<script>document.fonts.ready.then(()=>{setTimeout(()=>{window.print();},350);});<\/script>
+<script>document.fonts.ready.then(()=>{setTimeout(()=>{window.print();},400);});<\/script>
 </body>
 </html>`;}
 
