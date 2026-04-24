@@ -449,6 +449,7 @@ const CURRENCIES=[
   {code:'NZD',name:'New Zealand Dollar',flag:'🇳🇿',dec:2},
   {code:'RUB',name:'Russian Ruble',flag:'🇷🇺',dec:0},
   {code:'DKK',name:'Danish Krone',flag:'🇩🇰',dec:2},
+  {code:'NOK',name:'Norwegian Krone',flag:'🇳🇴',dec:2},
   {code:'SEK',name:'Swedish Krona',flag:'🇸🇪',dec:2},
   {code:'MUR',name:'Mauritian Rupee',flag:'🇲🇺',dec:2},
   {code:'MVR',name:'Maldivian Rufiyaa',flag:'🇲🇻',dec:2},
@@ -460,9 +461,10 @@ const CURRENCIES=[
   {code:'PLN',name:'Polish Zloty',flag:'🇵🇱',dec:2},
   {code:'TRY',name:'Turkish Lira',flag:'🇹🇷',dec:2},
   {code:'TWD',name:'Taiwan Dollar',flag:'🇹🇼',dec:2},
+  {code:'BDT',name:'Bangladeshi Taka',flag:'🇧🇩',dec:2},
 ];
 // Currencies available on Forex Card
-const CARD_CURRENCIES=['USD','CAD','GBP','AUD','SGD','EUR','HKD','JPY','NZD','SAR','ZAR','CHF','THB','AED','SEK'];
+const CARD_CURRENCIES=['USD','CAD','GBP','AUD','SGD','EUR','HKD','JPY','NZD','SAR','ZAR','CHF','THB','AED','SEK','CNY','VND','MYR','IDR','DKK','QAR','NOK','OMR','KWD','BHD','BDT','KRW','PHP'];
 const SNAP={USD:5,EUR:10,GBP:5,AED:10,SGD:5,THB:50,MYR:5,JPY:1000,IDR:100000,
   VND:500000,KRW:10000,CAD:5,AUD:5,SAR:10,LKR:500,CNY:10,BHD:1,OMR:1,QAR:5,
   CHF:5,NZD:5,RUB:500,DKK:50,SEK:50};
@@ -1846,7 +1848,7 @@ table{border-collapse:collapse;width:100%}
 
   <!-- FOOTER -->
   <div style="border-top:1pt solid #CCC;padding-top:8pt;display:flex;justify-content:space-between;align-items:flex-start">
-    <div style="font-size:8pt;font-family:Georgia,serif;color:#666;font-style:italic;line-height:1.6;max-width:68%">This proforma invoice is issued for reference purposes only. It does not constitute an official tax invoice, receipt, or bill of any kind.</div>
+    <div style="font-size:8pt;font-family:Georgia,serif;color:#666;font-style:italic;line-height:1.6;max-width:68%">This proforma invoice is issued for reference and quotation purposes only. It does not constitute an official tax invoice, receipt, or bill of any kind.</div>
     <div style="font-size:7pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#999;text-align:right">Matrix Forex<br>Foreign Exchange</div>
   </div>
 
