@@ -1200,14 +1200,13 @@ function billHTML(data,opts){
     <td style="padding:10px 0 4px 8px;text-align:right;font-size:13px;font-weight:700;color:#0F1611">${fINR(totalFX)}</td>
   </tr>`:'';
 
-  const chargeRow=(label,val,last=false)=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;${last?'':'border-bottom:1px solid #F0F0F0;'}"><span style="font-size:13px;color:#444">${label}</span><span style="font-size:13px;font-weight:600;color:#0F1611">${val}</span></div>`;
+  const chargeRow=(label,sub,val,last=false)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;${last?'':'border-bottom:1px solid #F0F0F0;'}"><div><div style="font-size:13px;color:#444">${label}</div>${sub?`<div style="font-size:10.5px;color:#999;margin-top:2px;font-style:italic">${sub}</div>`:''}</div><span style="font-size:13px;font-weight:600;color:#0F1611;padding-left:12px;flex-shrink:0">${val}</span></div>`;
 
   const charges=[
-    chargeRow('Goods &amp; Service Tax \u00B7 Slabwise',fINR(slabR),false),
-    chargeRow('Service Charges',fINR(sc),false),
-    chargeRow('Service Tax @ 18%',fINR(scGstR),nostro===0&&tcsAmount===0),
-    nostro>0?chargeRow('Nostro Charges',fINR(nostro),tcsAmount===0):'',
-    tcsAmount>0?chargeRow(`TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})`,fINR(tcsAmount),true):'',
+    chargeRow('Goods &amp; Service Tax','Forex value (slabwise) + 18% on services',fINR(slabR+scGstR),false),
+    chargeRow('Service Charges','',fINR(sc),nostro===0&&tcsAmount===0),
+    nostro>0?chargeRow('Nostro Charges','',fINR(nostro),tcsAmount===0):'',
+    tcsAmount>0?chargeRow(`TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})`,``,fINR(tcsAmount),true):'',
   ].join('');
 
   const payText=pmodes.join(' \u00B7 ');
@@ -1240,7 +1239,7 @@ function billHTML(data,opts){
     </table>
     ${sL('Charges &amp; Taxes')}
     <div style="margin-top:2px;margin-bottom:4px">${charges}</div>
-    <div style="height:1px;background:#1A1A1A;margin:14px 0"></div>
+    <div style="height:1px;background:#1A1A1A;margin:20px 0"></div>
     <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px">
       <span style="font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0F1611">${totalLabel}</span>
       <span style="font-family:'DM Sans',sans-serif;font-size:30px;font-weight:700;color:#6B1E1E;letter-spacing:-.5px">${fINR(totalR)}</span>
@@ -1494,8 +1493,8 @@ function renderSplitCard(i){
       <div class="sp-divider"></div>
       <div class="sp-summary">
         <div class="sp-sum-row"><span>G&S Tax (Slabwise)</span><span>${fINR(Math.round(d.slab))}</span></div>
+        <div class="sp-sum-row"><span>GST (Forex + Services)</span><span>${fINR(Math.round(d.slab)+Math.round(d.scGst))}</span></div>
         <div class="sp-sum-row"><span>Service Charges</span><span>${fINR(d.sc)}</span></div>
-        <div class="sp-sum-row"><span>Service Tax (18%)</span><span>${fINR(Math.round(d.scGst))}</span></div>
         ${mainTCSRow}
         <div class="sp-sum-total"><span>${lbl}</span><span>${fINR(grandTotal)}</span></div>
         <div class="sp-pay-modes">${chips}</div>
@@ -1577,7 +1576,7 @@ function copyTxt(){
   }).join('\n');
   const sub=d.computed.filter(r=>r.forexINR>0).length>1?`\n  Subtotal  ${fINR(d.totalFX)}`:'';
   const tcsLine=d.tcsAmount>0?`\n  TCS (${tcsType==='education'?'2%':'20%'})  ${fINR(d.tcsAmount)}`:'';
-  const txt=`━━━━━━━━━━━━━━━━━━━━━\nMatrix Forex — ${typeLabel}\n━━━━━━━━━━━━━━━━━━━━━\n${nowStr()}\n\nCURRENCIES:\n${lines}${sub}\n\nCHARGES:\n  G&S Tax (Slabwise)  ${fINR(Math.round(d.slab))}\n  Service Charges     ${fINR(d.sc)}\n  Service Tax (18%)   ${fINR(Math.round(d.scGst))}${tcsLine}\n━━━━━━━━━━━━━━━━━━━━━\n${totalLabel}: ${fINR(Math.round(d.total))}\nPayment: ${d.pmodes.join(' | ')}`;
+  const txt=`━━━━━━━━━━━━━━━━━━━━━\nMatrix Forex — ${typeLabel}\n━━━━━━━━━━━━━━━━━━━━━\n${nowStr()}\n\nCURRENCIES:\n${lines}${sub}\n\nCHARGES:\n  G&S Tax (Slabwise)  ${fINR(Math.round(d.slab))}\n  GST on Services     ${fINR(Math.round(d.scGst))}\n  Service Charges     ${fINR(d.sc)}${tcsLine}\n━━━━━━━━━━━━━━━━━━━━━\n${totalLabel}: ${fINR(Math.round(d.total))}\nPayment: ${d.pmodes.join(' | ')}`;
   navigator.clipboard.writeText(txt).then(()=>toast('✓ Text copied')).catch(()=>toast('Copy failed'));
 }
 // ══════════ COPY INVOICE (print layout as PNG) ══════════
@@ -1821,9 +1820,8 @@ table{border-collapse:collapse;width:100%}
     <div style="border-bottom:1.2pt solid #0A0A0A;margin-bottom:0"></div>
     <table>
       <tbody>
-        ${chargeR('Goods &amp; Service Tax','Slabwise',fINR(slabR))}
+        ${chargeR('Goods &amp; Service Tax','Forex value (slabwise) + 18% on services',fINR(slabR+scGstR))}
         ${chargeR('Service Charges','',fINR(sc))}
-        ${chargeR('Service Tax','18% on service charges',fINR(scGstR))}
         ${nostroAmt>0?chargeR('Nostro Charges','',fINR(nostroAmt)):''}
         ${tcsLabel}
         <tr>
