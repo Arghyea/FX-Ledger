@@ -1200,7 +1200,7 @@ function billHTML(data,opts){
   const chargeRow=(label,sub,val,last=false)=>`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;${last?'':'border-bottom:1px solid #F0F0F0;'}"><div><div style="font-size:13px;color:#444">${label}</div>${sub?`<div style="font-size:10.5px;color:#999;margin-top:2px;font-style:italic">${sub}</div>`:''}</div><span style="font-size:13px;font-weight:600;color:#0F1611;padding-left:12px;flex-shrink:0">${val}</span></div>`;
 
   const charges=[
-    chargeRow('Goods &amp; Service Tax','Forex value (slabwise) + 18% on services',fINR(slabR+scGstR),false),
+    chargeRow('Goods &amp; Service Tax (GST)','',fINR(slabR+scGstR),false),
     chargeRow('Service Charges','',fINR(sc),nostro===0&&tcsAmount===0),
     nostro>0?chargeRow('Nostro Charges','',fINR(nostro),tcsAmount===0):'',
     tcsAmount>0?chargeRow(`TCS @ ${tcsType==='education'?'2%':'20%'} (${tcsType==='education'?'Education':'Personal'})`,``,fINR(tcsAmount),true):'',
@@ -1817,7 +1817,7 @@ table{border-collapse:collapse;width:100%}
     <div style="border-bottom:1.2pt solid #0A0A0A;margin-bottom:0"></div>
     <table>
       <tbody>
-        ${chargeR('Goods &amp; Service Tax','Forex value (slabwise) + 18% on services',fINR(slabR+scGstR))}
+        ${chargeR('Goods &amp; Service Tax (GST)','',fINR(slabR+scGstR))}
         ${chargeR('Service Charges','',fINR(sc))}
         ${nostroAmt>0?chargeR('Nostro Charges','',fINR(nostroAmt)):''}
         ${tcsLabel}
