@@ -144,68 +144,85 @@ input[type=number]{-moz-appearance:textfield}
 .tcs-mode-note{font-size:11px;color:var(--txt3);margin-bottom:10px;font-weight:500}
 
 /* ── SPLIT MODAL ── */
-.split-overlay{position:fixed;inset:0;background:rgba(15,22,17,.5);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:14px;overflow-y:auto;backdrop-filter:blur(2px)}
-.split-modal{background:var(--bg);border-radius:var(--r);width:100%;max-width:860px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:fadeIn .22s ease;margin:auto}
-.split-modal-hdr{background:var(--G);border-radius:var(--r) var(--r) 0 0;padding:13px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.split-modal-title{font-family:'Playfair Display',serif;font-size:16px;color:#fff;font-weight:700;flex:1;min-width:80px}
-.split-hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.split-cnt-bar{display:flex;gap:2px;background:rgba(255,255,255,.1);border-radius:9px;padding:3px}
-.split-cnt-btn{padding:5px 12px;border:none;border-radius:7px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;background:transparent;color:rgba(255,255,255,.5);transition:all .18s}
-.split-cnt-btn.on{background:#fff;color:var(--G)}
-.split-copy-all{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 11px;border-radius:8px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .18s;white-space:nowrap}
-.split-copy-all:hover{background:rgba(255,255,255,.22)}
-.split-modal-x{background:rgba(255,255,255,.1);border:none;color:#fff;width:28px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s;flex-shrink:0}
-.split-modal-x:hover{background:rgba(255,255,255,.22)}
-
+.split-overlay{position:fixed;inset:0;background:rgba(10,14,11,.55);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:20px 14px;overflow-y:auto;backdrop-filter:blur(3px)}
+.split-modal{background:var(--bg);border-radius:var(--r);width:100%;max-width:920px;box-shadow:0 24px 64px rgba(0,0,0,.3);animation:fadeIn .2s ease;margin:auto}
+/* Header */
+.split-modal-hdr{background:#fff;border-bottom:1px solid var(--bdr);border-radius:var(--r) var(--r) 0 0;padding:14px 20px;display:flex;align-items:center;gap:12px}
+.split-modal-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--txt);font-weight:700;flex:1}
+.split-cnt-bar{display:flex;gap:2px;background:var(--bg);border-radius:10px;padding:3px;border:1px solid var(--bdr)}
+.split-cnt-btn{padding:6px 14px;border:none;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;background:transparent;color:var(--txt3);transition:all .18s}
+.split-cnt-btn.on{background:var(--G);color:#fff;box-shadow:0 1px 4px rgba(28,56,41,.3)}
+.split-modal-x{background:var(--bg);border:1.5px solid var(--bdr);color:var(--txt3);width:32px;height:32px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;flex-shrink:0}
+.split-modal-x:hover{background:#FEF2F2;border-color:#FCA5A5;color:#B91C1C}
+/* Balance summary bar */
+.split-balance-bar{padding:10px 20px;background:var(--card);border-bottom:1px solid var(--bdr)}
+.split-balance-status{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;margin-bottom:8px}
+.split-balance-dot{width:7px;height:7px;border-radius:50%;background:#D1D5DB;flex-shrink:0}
+.split-balance-dot.balanced{background:var(--G)}
+.split-balance-dot.over{background:#EF4444}
+.split-balance-chips{display:flex;gap:6px;flex-wrap:wrap}
+.split-sri{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--bg);border:1.5px solid var(--bdr);color:var(--txt2)}
+.split-sri.done{background:#E8F2EC;border-color:var(--Gb);color:var(--G)}
+.split-sri.over{background:#FEF2F2;border-color:#FCA5A5;color:#B91C1C}
+.split-progress-wrap{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.split-progress-item{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:600;color:var(--txt3)}
+.split-progress-track{flex:1;height:4px;background:#E5E7EB;border-radius:2px;overflow:hidden}
+.split-progress-fill{height:100%;border-radius:2px;background:var(--G);transition:width .3s ease}
+.split-progress-fill.over{background:#EF4444}
+.split-progress-fill.done{background:var(--G)}
 /* Encashment toolbar */
-.split-toolbar{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;background:var(--card);border-bottom:1px solid var(--bdr);gap:8px;flex-wrap:wrap}
-.split-cust-bar{display:flex;gap:2px;background:var(--bg);border-radius:9px;padding:3px}
+.split-toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 20px;background:var(--card);border-bottom:1px solid var(--bdr);gap:8px;flex-wrap:wrap}
+.split-cust-bar{display:flex;gap:2px;background:var(--bg);border-radius:9px;padding:3px;border:1px solid var(--bdr)}
 .split-cust-btn{padding:5px 12px;border:none;border-radius:7px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;background:transparent;color:var(--txt3);transition:all .18s;white-space:nowrap}
 .split-cust-btn.on{background:var(--G);color:#fff}
-
-/* Remaining tracker */
-.split-remain{display:flex;gap:7px;flex-wrap:wrap;padding:9px 18px;background:#F7F8F7;border-bottom:1px solid var(--bdr)}
-.sri{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:7px;font-size:11px;font-weight:600;background:var(--bg);border:1px solid var(--bdr)}
-.sri.done{background:#E8F2EC;border-color:var(--Gb);color:var(--G)}
-.sri.over{background:#FEF2F2;border-color:#FCA5A5;color:#B91C1C}
-
-/* Split cards */
-.split-cards-wrap{padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
-.sp-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;border-top:3px solid var(--G)}
-.sp-card.locked{border-top-color:#F59E0B}
-.sp-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--bdr)}
-.sp-num{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--G);display:flex;align-items:center;gap:5px}
+/* Cards grid */
+.split-cards-wrap{padding:12px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.sp-card{background:#fff;border-radius:var(--r);box-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.06);overflow:hidden;border:1.5px solid var(--bdr);transition:box-shadow .2s}
+.sp-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.09)}
+.sp-card.locked{border-color:#F59E0B}
+.sp-card.locked .sp-card-hdr{background:#FFFBEB}
+.sp-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-bottom:1px solid var(--bdr)}
+.sp-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--txt3);display:flex;align-items:center;gap:5px}
+.sp-num-badge{background:var(--G);color:#fff;width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
 .sp-lock-ico{font-size:10px;color:#F59E0B}
-.sp-acts{display:flex;gap:5px}
-.sp-act{width:26px;height:26px;border:1.5px solid var(--bdr);border-radius:5px;background:#fff;color:var(--txt2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:10px;font-family:inherit}
-.sp-act:hover{border-color:var(--G);color:var(--G)}
+.sp-acts{display:flex;gap:4px}
+.sp-act{width:26px;height:26px;border:1.5px solid var(--bdr);border-radius:6px;background:#fff;color:var(--txt2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.sp-act:hover{border-color:var(--G);color:var(--G);background:var(--Gp)}
 .sp-act.unlock-btn{border-color:#F59E0B;color:#B45309;background:#FFFBEB;font-weight:700}
 .sp-act.unlock-btn:hover{background:#FEF3C7}
-
-/* Split card body */
-.sp-body{padding:12px 13px;display:flex;flex-direction:column;gap:9px}
-.sp-sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--txt3);margin-bottom:-2px}
-.sp-curr-grp{display:flex;flex-direction:column;gap:4px}
+/* Card body */
+.sp-body{padding:10px 12px;display:flex;flex-direction:column;gap:7px}
+.sp-section-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--txt3)}
+.sp-curr-grp{display:flex;flex-direction:column;gap:3px}
 .sp-curr-row{display:flex;align-items:center;gap:8px}
-.sp-curr-left{display:flex;align-items:center;gap:6px;min-width:68px}
+.sp-curr-left{display:flex;align-items:center;gap:6px;min-width:72px}
 .sp-curr-flag{font-size:14px;line-height:1}
 .sp-curr-code{font-size:12px;font-weight:700;color:var(--G)}
-.sp-inp{width:130px;text-align:right;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:var(--rss);font-size:13px;font-weight:600;font-family:inherit;outline:none;transition:border-color .18s;color:var(--txt);background:#fff;margin-left:auto}
+.sp-inp{width:120px;text-align:right;padding:7px 10px;border:1.5px solid var(--bdr);border-radius:var(--rss);font-size:13px;font-weight:600;font-family:inherit;outline:none;transition:border-color .18s;color:var(--txt);background:#fff;margin-left:auto}
 .sp-inp:focus{border-color:var(--G)}
 .sp-inp.locked-inp{border-color:#F59E0B;background:#FFFDF5}
-.sp-curr-derived{font-size:11px;color:var(--txt3);padding-left:2px;padding-bottom:2px}
+.sp-curr-derived{font-size:11px;color:var(--txt3);text-align:right;padding-bottom:2px}
 .sp-denom{background:#FFFBEB;border:1px solid #F59E0B;border-radius:7px;padding:6px 9px;font-size:11px;color:#78350F}
 .sp-denom-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.sp-total-fx{font-size:12px;color:var(--txt3);font-weight:500;text-align:right;padding:3px 0}
-.sp-sc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:5px;border-top:1px solid var(--bdr)}
-.sp-sc-lbl{font-size:11px;color:var(--txt3);font-weight:600}
-.sp-divider{height:1px;background:var(--bdr)}
-.sp-summary{background:var(--bg);border-radius:var(--rss);padding:9px 11px;font-size:12px}
-.sp-sum-row{display:flex;justify-content:space-between;padding:3px 0;color:var(--txt2)}
+/* Service charge inline */
+.sp-sc-wrap{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:var(--bg);border-radius:var(--rss);border:1px solid var(--bdr)}
+.sp-sc-lbl{font-size:11px;color:var(--txt2);font-weight:600}
+.sp-sc-inp-wrap{display:flex;align-items:center;gap:4px}
+.sp-sc-sym{font-size:12px;color:var(--txt3);font-weight:600}
+.sp-sc-inp{width:70px;text-align:right;padding:4px 6px;border:1.5px solid var(--bdr);border-radius:7px;font-size:13px;font-weight:700;font-family:inherit;outline:none;transition:border-color .18s;color:var(--txt);background:#fff}
+.sp-sc-inp:focus{border-color:var(--G)}
+/* Summary */
+.sp-summary{background:var(--bg);border-radius:var(--rss);border:1px solid var(--bdr);overflow:hidden}
+.sp-sum-row{display:flex;justify-content:space-between;padding:5px 10px;font-size:11.5px;color:var(--txt2);border-bottom:1px solid var(--bdr)}
 .sp-sum-row span:last-child{font-weight:600;color:var(--txt)}
-.sp-sum-total{display:flex;justify-content:space-between;padding:7px 0 4px;font-weight:700;font-size:13px;border-top:1.5px solid var(--G);margin-top:5px;color:var(--G)}
-.sp-pay-modes{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.sp-sum-total{display:flex;justify-content:space-between;align-items:baseline;padding:8px 10px;font-size:12.5px;font-weight:700;background:var(--G);color:#fff}
+.sp-sum-total span:last-child{font-size:16px}
+.sp-pay-modes{display:flex;gap:5px;flex-wrap:wrap;padding:7px 10px;background:var(--Gp);border-top:1px solid var(--Gb)}
 .sp-pay-chip{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;background:var(--G);color:#fff}
+/* Download all footer */
+.split-footer{padding:14px 20px;border-top:1px solid var(--bdr);background:#fff;border-radius:0 0 var(--r) var(--r)}
+.split-dl-all{width:100%;height:44px;background:var(--G);border:none;border-radius:var(--rss);font-family:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .18s;letter-spacing:.01em}
+.split-dl-all:hover{background:var(--G2);box-shadow:0 4px 16px rgba(28,56,41,.28)}
 
 /* ── RIGHT PANEL ── */
 .rc{position:sticky;top:78px}
@@ -406,16 +423,11 @@ input[type=number]{-moz-appearance:textfield}
 <div class="split-overlay" id="splitOverlay" onclick="splitBgClick(event)">
   <div class="split-modal" id="splitModal">
     <div class="split-modal-hdr">
-      <span class="split-modal-title">Bill Split</span>
-      <div class="split-hdr-right">
-        <div class="split-cnt-bar" id="splitCntBar"></div>
-        <button class="split-copy-all" onclick="copyAllSplits()">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Save All
-        </button>
-      </div>
+      <span class="split-modal-title">Split Bill</span>
+      <div class="split-cnt-bar" id="splitCntBar"></div>
       <button class="split-modal-x" onclick="closeSplitModal()">✕</button>
     </div>
+    <div class="split-balance-bar" id="splitBalanceBar"></div>
     <div class="split-toolbar" id="splitToolbar" style="display:none">
       <span style="font-size:11px;font-weight:600;color:var(--txt3)">Customer Type</span>
       <div class="split-cust-bar">
@@ -423,8 +435,13 @@ input[type=number]{-moz-appearance:textfield}
         <button class="split-cust-btn" id="custForeign" onclick="setCustType('foreign')">Foreign National (≤$3,000 cash)</button>
       </div>
     </div>
-    <div class="split-remain" id="splitRemain"></div>
     <div class="split-cards-wrap" id="splitCardsWrap"></div>
+    <div class="split-footer">
+      <button class="split-dl-all" onclick="downloadAllSplitsPDF()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download All Splits as PDF
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1414,26 +1431,130 @@ function closeSplitModal(){document.getElementById('splitOverlay').style.display
 function splitBgClick(e){if(e.target===document.getElementById('splitOverlay'))closeSplitModal();}
 
 function renderSplitModal(){
-  document.getElementById('splitCntBar').innerHTML=[2,3,4,5].map(n=>`<button class="split-cnt-btn${n===splitCount?' on':''}" onclick="setSplitCount(${n})">${n}</button>`).join('');
-  renderSplitRemaining();
+  document.getElementById('splitCntBar').innerHTML=[2,3,4,5,6].map(n=>`<button class="split-cnt-btn${n===splitCount?' on':''}" onclick="setSplitCount(${n})">${n}</button>`).join('');
+  renderBalanceBar();
   const wrap=document.getElementById('splitCardsWrap');wrap.innerHTML='';
   splitData.forEach((_,i)=>{const d=document.createElement('div');d.id='sp-'+i;wrap.appendChild(d);renderSplitCard(i);});
 }
 
-function renderSplitRemaining(){
-  const el=document.getElementById('splitRemain');if(!el)return;
+function renderBalanceBar(){
+  const el=document.getElementById('splitBalanceBar');if(!el)return;
   const ac=getActiveCurrs();
-  let html='';
-  ac.forEach(c=>{
+  let allBalanced=true;
+  const chips=ac.map(c=>{
     const alloc=splitData.reduce((s,sp)=>s+(sp.currAmounts[c.code]||0),0);
     const rem=+(c.totalCurr-alloc).toFixed(c.dec);
     const over=rem<-0.01,done=Math.abs(rem)<0.01;
-    html+=`<div class="sri${over?' over':done?' done':''}">
+    if(!done)allBalanced=false;
+    return`<div class="split-sri${over?' over':done?' done':''}">
       <span>${c.flag} ${c.code}</span>
-      <span>${done?'✓':over?`⚠ +${fcurr(Math.abs(rem),c.code)}`:fcurr(rem,c.code)+' left'}</span>
+      <span>${done?'✓':over?`+${fcurr(Math.abs(rem),c.code)} over`:fcurr(rem,c.code)+' left'}</span>
     </div>`;
-  });
-  el.innerHTML=html;
+  }).join('');
+  const bars=ac.map(c=>{
+    const alloc=splitData.reduce((s,sp)=>s+(sp.currAmounts[c.code]||0),0);
+    const pct=c.totalCurr>0?Math.min(alloc/c.totalCurr*100,100):0;
+    const over=alloc>c.totalCurr+0.001,done=Math.abs(c.totalCurr-alloc)<0.01;
+    return`<div class="split-progress-item">
+      <span style="min-width:36px">${c.flag} ${c.code}</span>
+      <div class="split-progress-track">
+        <div class="split-progress-fill${over?' over':done?' done':''}" style="width:${pct}%"></div>
+      </div>
+      <span style="min-width:52px;text-align:right;color:${done?'var(--G)':over?'#EF4444':'var(--txt3)'}">${done?'✓ Full':over?'Over':'${fcurr(alloc,c.code)}'}</span>
+    </div>`.replace("'${fcurr(alloc,c.code)}'",fcurr(alloc,c.code));
+  }).join('');
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div class="split-balance-status">
+        <div class="split-balance-dot${allBalanced?' balanced':''}"></div>
+        <span style="color:var(--txt2)">${allBalanced?`<span style="color:var(--G);font-weight:700">All balanced</span> — ready to download`:'Allocate remaining amounts'}</span>
+      </div>
+      <div class="split-balance-chips">${chips}</div>
+    </div>
+    <div class="split-progress-wrap">${bars}</div>`;
+}
+
+// Keep old name for callers
+function renderSplitRemaining(){renderBalanceBar();}
+
+function renderSplitCard(i){
+  const el=document.getElementById('sp-'+i);if(!el)return;
+  const sp=splitData[i];
+  const ac=getActiveCurrs();
+  const lockIcon=sp.locked?`<span class="sp-lock-ico">🔒</span>`:'';
+  const unlockBtn=sp.locked?`<button class="sp-act unlock-btn" onclick="unlockSplit(${i})" title="Unlock">↺</button>`:'';
+
+  const currRows=ac.map(c=>{
+    const amt=sp.currAmounts[c.code]||0;
+    const derived=amt*c.rate;
+    const rv=c.rate;const rd=rv<0.01?5:rv<1?4:2;
+    let denomHTML='';
+    const unit=SNAP[c.code]||1;
+    if(unit>1&&amt>0){
+      const fl=Math.floor(amt/unit)*unit,ce=Math.ceil(amt/unit)*unit;
+      if(Math.abs(fl-amt)>0.001){
+        const fd=(fl-amt)*c.rate,cd=(ce-amt)*c.rate;
+        denomHTML=`<div class="sp-denom">💡 ${fcurr(amt,c.code)} ${c.code} isn't clean
+          <div class="sp-denom-btns">
+            <button class="dh-btn" onclick="snapSplitCurr(${i},'${c.code}',${fl})">↓ ${fcurr(fl,c.code)} (${fINR(fd)})</button>
+            <button class="dh-btn" onclick="snapSplitCurr(${i},'${c.code}',${ce})">↑ ${fcurr(ce,c.code)} (+${fINR(Math.abs(cd))})</button>
+          </div></div>`;
+      }
+    }
+    return`<div class="sp-curr-grp">
+      <div class="sp-curr-row">
+        <div class="sp-curr-left"><span class="sp-curr-flag">${c.flag}</span><span class="sp-curr-code">${c.code}</span></div>
+        <input class="sp-inp${sp.locked?' locked-inp':''}" type="number" value="${amt||''}" placeholder="0"
+          step="${c.dec===0?1:c.dec===3?0.001:0.01}"
+          oninput="setSplitCurr(${i},'${c.code}',this.value)"
+          onblur="blurSplitCurr(${i},'${c.code}')">
+      </div>
+      <div class="sp-curr-derived" id="derived-${i}-${c.code}">× ₹${rv.toFixed(rd)} = ${derived>0?fINR(derived):'—'}</div>
+      ${denomHTML}
+    </div>`;
+  }).join('');
+
+  const d=calcSplitResult(sp);
+  const mainTCS=(i===0&&tcsEnabled)?Math.round(calcTCS(
+    getActiveCurrs().reduce((s,c)=>s+c.totalINR,0)
+  ).tcsAmount):0;
+  const grandTotal=Math.round(d.total+mainTCS);
+  const lbl=TYPE==='sale'?'Total Payable':'Amount Receivable';
+  const chips=splitPayModes(grandTotal).map(m=>`<span class="sp-pay-chip">${m}</span>`).join('');
+  const scGstAmt=Math.round(d.scGst);
+
+  el.innerHTML=`<div class="sp-card${sp.locked?' locked':''}">
+    <div class="sp-card-hdr">
+      <span class="sp-num"><span class="sp-num-badge">${i+1}</span> of ${splitCount} ${lockIcon}</span>
+      <div class="sp-acts">
+        ${unlockBtn}
+        <button class="sp-act" onclick="copySplitImg(${i})" title="Copy Image">
+          <svg width="11" height="11" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </button>
+        <button class="sp-act" onclick="downloadPDF({splitData:splitBillData(${i}),splitLabel:'Split ${i+1} of ${splitCount}'})" title="Download PDF">
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="sp-body">
+      <div class="sp-section-lbl">Currencies</div>
+      ${currRows}
+      <div class="sp-sc-wrap">
+        <span class="sp-sc-lbl">Service Charge</span>
+        <div class="sp-sc-inp-wrap">
+          <span class="sp-sc-sym">₹</span>
+          <input class="sp-sc-inp" type="number" value="${sp.sc}" oninput="setSplitSC(${i},this.value)">
+        </div>
+      </div>
+      <div class="sp-summary">
+        <div class="sp-sum-row"><span>GST (Forex + Services)</span><span>${fINR(Math.round(d.slab)+scGstAmt)}</span></div>
+        <div class="sp-sum-row"><span>Service Charges</span><span>${fINR(sp.sc)}</span></div>
+        ${mainTCS>0?`<div class="sp-sum-row"><span>TCS (${tcsType==='education'?'2%':'20%'})</span><span>${fINR(mainTCS)}</span></div>`:''}
+        <div class="sp-sum-total"><span>${lbl}</span><span>${fINR(grandTotal)}</span></div>
+        <div class="sp-pay-modes">${chips}</div>
+      </div>
+    </div>
+  </div>`;
 }
 
 function renderSplitCard(i){
@@ -1562,20 +1683,39 @@ async function copySplitImg(i){
 
 function printSplit(i){openPrintWin(printHTML(splitBillData(i),{splitLabel:`Split ${i+1} of ${splitCount}`}));}
 
-async function copyAllSplits(){
+async function downloadAllSplitsPDF(){
   if(typeof html2canvas==='undefined'){toast('Library loading, try again');return;}
+  toast('Generating PDF…');
   const snap=document.getElementById('snapTarget');
-  snap.innerHTML=splitData.map((_,i)=>`<div style="margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.1)">${billHTML(splitBillData(i),{splitLabel:`Split ${i+1} of ${splitCount}`})}</div>`).join('');
-  await new Promise(r=>setTimeout(r,150));
   try{
-    const canvas=await html2canvas(snap,{scale:2.5,useCORS:true,allowTaint:true,backgroundColor:'#EDECEA',logging:false,width:500,windowWidth:500,
-      onclone:doc=>{const el=doc.getElementById('snapTarget');if(el){el.style.position='static';el.style.left='0';el.style.padding='14px';}}});
-    canvas.toBlob(async blob=>{
-      if(!blob){toast('Capture failed');return;}
-      try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);toast('✓ All splits copied!');}
-      catch{const a=document.createElement('a');a.download='all-splits.png';a.href=URL.createObjectURL(blob);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast('All splits saved as PNG');}
-    },'image/png');
-  }catch(e){toast('Error');console.error(e);}
+    // Load jsPDF lazily
+    if(typeof window.jspdf==='undefined'){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload=res;s.onerror=rej;document.head.appendChild(s);
+      });
+    }
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pdfW=pdf.internal.pageSize.getWidth();
+
+    for(let i=0;i<splitData.length;i++){
+      const data=splitBillData(i);
+      snap.innerHTML=`<div id="print-wrap" style="width:794px;background:#fff;padding:68px 83px 60px 83px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">${printHTML(data,{splitLabel:`Split ${i+1} of ${splitCount}`})}</div>`;
+      await new Promise(r=>setTimeout(r,180));
+      const el=snap.querySelector('#print-wrap');
+      const canvas=await html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:794,windowWidth:794});
+      const imgData=canvas.toDataURL('image/jpeg',0.92);
+      const pdfH=(canvas.height/canvas.width)*pdfW;
+      if(i>0)pdf.addPage();
+      pdf.addImage(imgData,'JPEG',0,0,pdfW,Math.min(pdfH,pdf.internal.pageSize.getHeight()));
+      toast(`Processing split ${i+1} of ${splitData.length}…`);
+    }
+    snap.innerHTML='';
+    pdf.save('matrix-forex-splits.pdf');
+    toast('✓ All splits downloaded as PDF');
+  }catch(e){snap.innerHTML='';toast('PDF generation failed');console.error(e);}
 }
 
 // ══════════ COPY / PRINT MAIN ══════════
