@@ -82,6 +82,17 @@ input[type=number]{-moz-appearance:textfield}
 .cr-rl{font-size:11px;color:var(--G);font-weight:500}
 .cr-rv{font-size:14px;font-weight:700;color:var(--G)}
 
+/* ── RATE PRESETS ── */
+.rp-row{display:flex;align-items:center;gap:6px;margin-top:6px;min-height:21px;flex-wrap:wrap}
+.rp-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--G);background:var(--Gp);border:1px solid var(--Gb);border-radius:20px;padding:2.5px 9px;line-height:1.4;white-space:nowrap}
+.rp-badge.stale{color:#92400E;background:#FFFBEB;border-color:#FCD34D}
+.rp-clear{background:none;border:none;color:var(--txt3);font-size:11px;cursor:pointer;padding:2px 5px;border-radius:4px;font-family:inherit;line-height:1;transition:all .15s}
+.rp-clear:hover{color:#EF4444;background:#FEF2F2}
+.rp-save{background:#fff;border:1.5px solid var(--bdr);border-radius:20px;font-size:10px;font-weight:700;color:var(--txt2);cursor:pointer;padding:2.5px 10px;font-family:inherit;transition:all .15s;line-height:1.4;white-space:nowrap}
+.rp-save:hover{border-color:var(--G);color:var(--G);background:var(--Gp)}
+.rp-apply{background:var(--bg);border:1px solid var(--bdr);border-radius:20px;font-size:10px;font-weight:600;color:var(--txt2);cursor:pointer;padding:2.5px 10px;font-family:inherit;transition:all .15s;line-height:1.4;white-space:nowrap}
+.rp-apply:hover{border-color:var(--G);color:var(--G);background:var(--Gp)}
+
 /* ── DENOM HINT ── */
 .dh{margin-top:9px;background:#FFFBEB;border:1px solid #F59E0B;border-radius:9px;padding:10px 12px;font-size:12px;color:#78350F}
 .dh-btns{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
@@ -219,6 +230,9 @@ input[type=number]{-moz-appearance:textfield}
 .sp-sum-total span:last-child{font-size:16px}
 .sp-pay-modes{display:flex;gap:5px;flex-wrap:wrap;padding:7px 10px;background:var(--Gp);border-top:1px solid var(--Gb)}
 .sp-pay-chip{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;background:var(--G);color:#fff}
+.sp-total-fx{font-size:11px;color:var(--txt2);text-align:right;padding:1px 2px 0;font-weight:500}
+.sp-sc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:var(--bg);border-radius:var(--rss);border:1px solid var(--bdr)}
+.sp-divider{height:1px;background:var(--bdr);margin:2px 0}
 /* Download all footer */
 .split-footer{padding:14px 20px;border-top:1px solid var(--bdr);background:#fff;border-radius:0 0 var(--r) var(--r)}
 .split-dl-all{width:100%;height:44px;background:var(--G);border:none;border-radius:var(--rss);font-family:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .18s;letter-spacing:.01em}
@@ -506,6 +520,84 @@ function setSC(v){S().sc=parseFloat(v)||0;}
 function S(){return ST[TYPE];}
 function cinfo(c){return CURRENCIES.find(x=>x.code===c)||CURRENCIES[0];}
 
+// ══════════ RATE PRESETS (localStorage, per side + product + currency) ══════════
+const PRESET_KEY='mfx_rate_presets_v1';
+function loadPresets(){
+  try{const p=JSON.parse(localStorage.getItem(PRESET_KEY));return(p&&typeof p==='object')?p:{};}
+  catch{return{};}
+}
+function storePresets(p){try{localStorage.setItem(PRESET_KEY,JSON.stringify(p));}catch{}}
+function pkey(r){return TYPE+':'+(r.txnType||'currency');}
+function getPreset(r){const p=loadPresets();const g=p[pkey(r)]||{};return g[r.code]||null;}
+function savePresetFor(r,rate){
+  const p=loadPresets();const k=pkey(r);
+  p[k]=p[k]||{};p[k][r.code]={rate:rate,ts:Date.now()};
+  storePresets(p);
+}
+function clearPresetFor(r){
+  const p=loadPresets();const k=pkey(r);
+  if(p[k]){delete p[k][r.code];if(Object.keys(p[k]).length===0)delete p[k];storePresets(p);}
+}
+function presetIsToday(ts){return new Date(ts).toDateString()===new Date().toDateString();}
+function presetTimeLabel(ts){
+  const d=new Date(ts);
+  return presetIsToday(ts)
+    ?d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})
+    :d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+}
+// Auto-fill a row's empty rate from its saved preset
+function applyPresetToRow(r){
+  const p=getPreset(r);
+  if(p&&!(parseFloat(r.rate)>0))r.rate=String(p.rate);
+}
+function buildPresetUI(r){
+  const preset=getPreset(r);
+  const rate=parseFloat(r.rate)||0;
+  // Current rate matches the saved one → show freshness badge + forget option
+  if(preset&&rate>0&&Math.abs(rate-preset.rate)<1e-9){
+    const fresh=presetIsToday(preset.ts);
+    return`<div class="rp-row">
+      <span class="rp-badge${fresh?'':' stale'}">${fresh?'✓ Saved today '+presetTimeLabel(preset.ts):'⚠ Saved '+presetTimeLabel(preset.ts)+' — verify'}</span>
+      <button class="rp-clear" onclick="onClearPreset(${r.id})" title="Forget saved rate">✕</button>
+    </div>`;
+  }
+  // Rate typed but differs from saved (or nothing saved yet) → offer Save (+ revert chip if one exists)
+  if(rate>0){
+    return`<div class="rp-row">
+      <button class="rp-save" onclick="onSavePreset(${r.id})" title="Auto-fill this rate next time">💾 Save rate</button>
+      ${preset?`<button class="rp-apply" onclick="onApplyPreset(${r.id})" title="Use saved rate">↺ ₹${preset.rate}</button>`:''}
+    </div>`;
+  }
+  // Empty rate but a preset exists (e.g. user cleared the field) → one-tap apply
+  if(preset){
+    return`<div class="rp-row">
+      <button class="rp-apply" onclick="onApplyPreset(${r.id})">Use saved ₹${preset.rate} · ${presetTimeLabel(preset.ts)}</button>
+    </div>`;
+  }
+  return`<div class="rp-row"></div>`;
+}
+function updatePresetUI(r){const el=document.getElementById('preset-'+r.id);if(el)el.innerHTML=buildPresetUI(r);}
+function onSavePreset(id){
+  const r=S().rows.find(x=>x.id===id);if(!r)return;
+  const rate=parseFloat(r.rate)||0;
+  if(rate<=0){toast('Enter a rate first');return;}
+  savePresetFor(r,rate);
+  updatePresetUI(r);
+  toast('✓ '+r.code+' rate saved — will auto-fill next time');
+}
+function onApplyPreset(id){
+  const r=S().rows.find(x=>x.id===id);if(!r)return;
+  const p=getPreset(r);if(!p)return;
+  r.rate=String(p.rate);
+  renderRowEl(r);updateRowHints(r);updateBill();
+}
+function onClearPreset(id){
+  const r=S().rows.find(x=>x.id===id);if(!r)return;
+  clearPresetFor(r);
+  updatePresetUI(r);
+  toast(r.code+' saved rate cleared');
+}
+
 // TCS
 let tcsEnabled=false, tcsType='personal', tcsPrior=0, tcsLoan=0, tcsMode='manual', tcsFullLRS=false;
 const TCS_THR=1000000;
@@ -533,7 +625,7 @@ function switchType(t){
 }
 
 // ══════════ ROW OPS ══════════
-function addRow(){const st=S();st.rows.push({id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency',txnType:'currency'});renderAll();updateBill();}
+function addRow(){const st=S();const row={id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency',txnType:'currency'};applyPresetToRow(row);st.rows.push(row);renderAll();updateBill();}
 function removeRow(id){S().rows=S().rows.filter(r=>r.id!==id);renderAll();updateBill();}
 function setMode(id,mode){const r=S().rows.find(x=>x.id===id);if(r){r.mode=mode;r.amount='';renderRowEl(r);updateBill();}}
 function setTxnType(id,txnType){
@@ -542,11 +634,20 @@ function setTxnType(id,txnType){
   r.amount='';r.mode='currency'; // reset amount on type change
   // Card: enforce card-only currencies
   if(txnType==='card'&&!CARD_CURRENCIES.includes(r.code))r.code='USD';
+  const p=getPreset(r);
+  if(p)r.rate=String(p.rate); // each product (cash/card/remit) keeps its own saved rate
   renderRowEl(r);updateRowHints(r);updateBill();
 }
-function setCode(id,code){const r=S().rows.find(x=>x.id===id);if(!r)return;r.code=code;renderRowEl(r);updateRowHints(r);updateBill();}
+function setCode(id,code){
+  const r=S().rows.find(x=>x.id===id);if(!r)return;
+  r.code=code;
+  const p=getPreset(r);
+  if(p)r.rate=String(p.rate); // saved rate for the new currency takes over; otherwise keep as-is
+  renderRowEl(r);updateRowHints(r);updateBill();
+}
 function setField(id,f,v){
   const r=S().rows.find(x=>x.id===id);if(!r)return;r[f]=v;
+  if(f==='rate')updatePresetUI(r);
   const rate=parseFloat(r.rate)||0,amt=parseFloat(r.amount)||0;
   if(rate>0&&amt>0)updateRowHints(r);
   else{const h=document.getElementById('hints-'+r.id);if(h)h.innerHTML='';}
@@ -593,7 +694,9 @@ function onNostro(v){NOSTRO=parseFloat(v)||0;updateBill();}
 
 function resetCurrent(){
   const st=S();
-  st.rows=[{id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency',txnType:'currency'}];
+  const row={id:st.uid++,code:'USD',rate:'',amount:'',mode:'currency',txnType:'currency'};
+  applyPresetToRow(row);
+  st.rows=[row];
   setSC(250);NOSTRO=0;
   document.getElementById('inpSC').value=250;
   const nostroInp=document.getElementById('inpNostro');
@@ -774,6 +877,7 @@ function buildRow(r){
         <div class="pfx-wrap"><span class="pfx-sym">₹</span>
           <input class="inp pfx" type="number" placeholder="0.00000" value="${r.rate}" oninput="setField(${r.id},'rate',this.value)" step="0.00001">
         </div>
+        <div id="preset-${r.id}">${buildPresetUI(r)}</div>
       </div>
     </div>
     ${modeBar}
@@ -1485,86 +1589,6 @@ function renderSplitCard(i){
   const lockIcon=sp.locked?`<span class="sp-lock-ico">🔒</span>`:'';
   const unlockBtn=sp.locked?`<button class="sp-act unlock-btn" onclick="unlockSplit(${i})" title="Unlock">↺</button>`:'';
 
-  const currRows=ac.map(c=>{
-    const amt=sp.currAmounts[c.code]||0;
-    const derived=amt*c.rate;
-    const rv=c.rate;const rd=rv<0.01?5:rv<1?4:2;
-    let denomHTML='';
-    const unit=SNAP[c.code]||1;
-    if(unit>1&&amt>0){
-      const fl=Math.floor(amt/unit)*unit,ce=Math.ceil(amt/unit)*unit;
-      if(Math.abs(fl-amt)>0.001){
-        const fd=(fl-amt)*c.rate,cd=(ce-amt)*c.rate;
-        denomHTML=`<div class="sp-denom">💡 ${fcurr(amt,c.code)} ${c.code} isn't clean
-          <div class="sp-denom-btns">
-            <button class="dh-btn" onclick="snapSplitCurr(${i},'${c.code}',${fl})">↓ ${fcurr(fl,c.code)} (${fINR(fd)})</button>
-            <button class="dh-btn" onclick="snapSplitCurr(${i},'${c.code}',${ce})">↑ ${fcurr(ce,c.code)} (+${fINR(Math.abs(cd))})</button>
-          </div></div>`;
-      }
-    }
-    return`<div class="sp-curr-grp">
-      <div class="sp-curr-row">
-        <div class="sp-curr-left"><span class="sp-curr-flag">${c.flag}</span><span class="sp-curr-code">${c.code}</span></div>
-        <input class="sp-inp${sp.locked?' locked-inp':''}" type="number" value="${amt||''}" placeholder="0"
-          step="${c.dec===0?1:c.dec===3?0.001:0.01}"
-          oninput="setSplitCurr(${i},'${c.code}',this.value)"
-          onblur="blurSplitCurr(${i},'${c.code}')">
-      </div>
-      <div class="sp-curr-derived" id="derived-${i}-${c.code}">× ₹${rv.toFixed(rd)} = ${derived>0?fINR(derived):'—'}</div>
-      ${denomHTML}
-    </div>`;
-  }).join('');
-
-  const d=calcSplitResult(sp);
-  const mainTCS=(i===0&&tcsEnabled)?Math.round(calcTCS(
-    getActiveCurrs().reduce((s,c)=>s+c.totalINR,0)
-  ).tcsAmount):0;
-  const grandTotal=Math.round(d.total+mainTCS);
-  const lbl=TYPE==='sale'?'Total Payable':'Amount Receivable';
-  const chips=splitPayModes(grandTotal).map(m=>`<span class="sp-pay-chip">${m}</span>`).join('');
-  const scGstAmt=Math.round(d.scGst);
-
-  el.innerHTML=`<div class="sp-card${sp.locked?' locked':''}">
-    <div class="sp-card-hdr">
-      <span class="sp-num"><span class="sp-num-badge">${i+1}</span> of ${splitCount} ${lockIcon}</span>
-      <div class="sp-acts">
-        ${unlockBtn}
-        <button class="sp-act" onclick="copySplitImg(${i})" title="Copy Image">
-          <svg width="11" height="11" viewBox="0 0 15 15" fill="none"><rect x="4" y="4" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 10H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        </button>
-        <button class="sp-act" onclick="downloadPDF({splitData:splitBillData(${i}),splitLabel:'Split ${i+1} of ${splitCount}'})" title="Download PDF">
-          <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M2 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2M7 1v8M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </div>
-    <div class="sp-body">
-      <div class="sp-section-lbl">Currencies</div>
-      ${currRows}
-      <div class="sp-sc-wrap">
-        <span class="sp-sc-lbl">Service Charge</span>
-        <div class="sp-sc-inp-wrap">
-          <span class="sp-sc-sym">₹</span>
-          <input class="sp-sc-inp" type="number" value="${sp.sc}" oninput="setSplitSC(${i},this.value)">
-        </div>
-      </div>
-      <div class="sp-summary">
-        <div class="sp-sum-row"><span>GST (Forex + Services)</span><span>${fINR(Math.round(d.slab)+scGstAmt)}</span></div>
-        <div class="sp-sum-row"><span>Service Charges</span><span>${fINR(sp.sc)}</span></div>
-        ${mainTCS>0?`<div class="sp-sum-row"><span>TCS (${tcsType==='education'?'2%':'20%'})</span><span>${fINR(mainTCS)}</span></div>`:''}
-        <div class="sp-sum-total"><span>${lbl}</span><span>${fINR(grandTotal)}</span></div>
-        <div class="sp-pay-modes">${chips}</div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderSplitCard(i){
-  const el=document.getElementById('sp-'+i);if(!el)return;
-  const sp=splitData[i];
-  const ac=getActiveCurrs();
-  const lockIcon=sp.locked?`<span class="sp-lock-ico">🔒</span>`:'';
-  const unlockBtn=sp.locked?`<button class="sp-act unlock-btn" onclick="unlockSplit(${i})" title="Unlock">↺</button>`:'';
-
   // Currency input rows with derived INR and denom hints
   const currRows=ac.map(c=>{
     const amt=sp.currAmounts[c.code]||0;
@@ -1597,15 +1621,7 @@ function renderSplitCard(i){
   }).join('');
 
   const d=calcSplitResult(sp);
-  const tcsOnThis=(i===0&&tcsEnabled)?Math.round(calcTCS(
-    splitData.reduce((s,sp2,idx)=>{
-      const ac2=getActiveCurrs();
-      return s+ac2.reduce((ss,c)=>ss+(sp2.currAmounts[c.code]||0)*c.rate,0);
-    },0) // total FX across all splits
-  ).tcsAmount):0;
-
-  // Actually for TCS on split 1: TCS is calculated on the TOTAL bill's TCS, not per-split
-  // Get the full bill TCS and put it on split 1
+  // TCS is calculated on the TOTAL bill and placed on split 1 (not per-split)
   const mainTCS=(i===0&&tcsEnabled)?Math.round(calcTCS(
     getActiveCurrs().reduce((s,c)=>s+c.totalINR,0)
   ).tcsAmount):0;
@@ -1635,7 +1651,7 @@ function renderSplitCard(i){
       </div>
     </div>
     <div class="sp-body">
-      <div class="sp-sec-lbl">Currencies</div>
+      <div class="sp-section-lbl">Currencies</div>
       ${currRows}
       ${splitFxINR>0?`<div class="sp-total-fx">Total Forex INR: <strong>${fINR(Math.round(splitFxINR))}</strong></div>`:''}
       <div class="sp-sc-row">
@@ -1681,8 +1697,6 @@ async function copySplitImg(i){
     },'image/png');
   }catch(e){toast('Error capturing');console.error(e);}
 }
-
-function printSplit(i){openPrintWin(printHTML(splitBillData(i),{splitLabel:`Split ${i+1} of ${splitCount}`}));}
 
 async function downloadAllSplitsPDF(){
   if(typeof html2canvas==='undefined'){toast('Library loading, try again');return;}
