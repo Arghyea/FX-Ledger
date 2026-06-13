@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Matrix Forex — ForexBill</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600;700&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>addEventListener('load',function(){try{if(document.fonts&&document.fonts.load){['"Spectral"','"Libre Franklin"','"DM Sans"'].forEach(function(f){[400,500,600,700].forEach(function(w){document.fonts.load(w+' 16px '+f);});});}}catch(e){}});</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -20,14 +22,19 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 input[type=number]{-moz-appearance:textfield}
 
 /* ── HEADER ── */
-.hdr{height:60px;background:var(--G);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.18)}
-.logo{display:flex;flex-direction:column;gap:1px}
+.hdr{height:60px;background:linear-gradient(135deg,#21412f 0%,#193025 100%);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.2);overflow:hidden}
+.hdr-tex{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.logo{position:relative;z-index:1;display:flex;flex-direction:column;gap:1px}
 .logo-main{font-family:'Playfair Display',serif;font-size:17px;color:#fff;font-weight:700;letter-spacing:-.2px;line-height:1.1}
-.logo-sub{font-size:9px;color:rgba(255,255,255,.38);letter-spacing:.12em;text-transform:uppercase;font-weight:500}
+.logo-sub{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.12em;text-transform:uppercase;font-weight:500}
 .beta-badge{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);padding:2px 7px;border-radius:20px;margin-left:7px;vertical-align:middle;white-space:nowrap}
-.tab-grp{background:rgba(255,255,255,.1);border-radius:10px;padding:3px;display:flex;gap:2px}
-.tab-btn{padding:6px 20px;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.55);background:transparent}
-.tab-btn.on{background:#fff;color:var(--G);box-shadow:0 1px 4px rgba(0,0,0,.14)}
+/* premium segmented toggle */
+.tab-grp{position:relative;z-index:1;display:flex;padding:4px;border-radius:12px;background:rgba(0,0,0,.22);box-shadow:inset 0 1px 3px rgba(0,0,0,.32),inset 0 0 0 1px rgba(255,255,255,.05)}
+.tab-grp::before{content:"";position:absolute;z-index:0;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/2);border-radius:9px;background:linear-gradient(180deg,#ffffff,#edf1ee);box-shadow:0 1px 2px rgba(0,0,0,.24),0 3px 9px rgba(0,0,0,.18)}
+.tab-grp.enc::before{transform:translateX(100%)}
+.tab-btn{position:relative;z-index:1;flex:1;min-width:98px;padding:8px 18px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;color:rgba(255,255,255,.56);cursor:pointer}
+.tab-btn:hover{color:rgba(255,255,255,.82)}
+.tab-btn.on,.tab-btn.on:hover{color:#173024;font-weight:700}
 
 /* ── LAYOUT ── */
 .main-wrap{flex:1}
@@ -321,14 +328,22 @@ input[type=number]{-moz-appearance:textfield}
 <body>
 
 <header class="hdr">
+  <svg class="hdr-tex" viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="none" stroke="#ffffff" stroke-width="1.1">
+      <path d="M0,9 Q150,2 300,9 T600,9 T900,9 T1200,9" opacity=".085"/>
+      <path d="M0,20 Q150,14 300,20 T600,20 T900,20 T1200,20" opacity=".065"/>
+      <path d="M0,31 Q150,23 300,31 T600,31 T900,31 T1200,31" opacity=".085"/>
+      <path d="M0,42 Q150,36 300,42 T600,42 T900,42 T1200,42" opacity=".06"/>
+      <path d="M0,53 Q150,46 300,53 T600,53 T900,53 T1200,53" opacity=".07"/>
+    </g>
+  </svg>
   <div class="logo">
     <div style="display:flex;align-items:center">
       <span class="logo-main">Matrix Forex</span>
-      <span class="beta-badge">Beta</span>
     </div>
     <span class="logo-sub">Foreign Exchange</span>
   </div>
-  <div class="tab-grp">
+  <div class="tab-grp" id="tabGrp">
     <button class="tab-btn on" id="tbSale" onclick="switchType('sale')">Sale</button>
     <button class="tab-btn" id="tbEnc" onclick="switchType('encashment')">Encashment</button>
   </div>
@@ -615,6 +630,7 @@ function switchType(t){
   if(t==='encashment'){tcsEnabled=false;tcsMode='manual';tcsType='personal';tcsPrior=0;tcsLoan=0;tcsFullLRS=false;}
   document.getElementById('tbSale').classList.toggle('on',t==='sale');
   document.getElementById('tbEnc').classList.toggle('on',t==='encashment');
+  const tg=document.getElementById('tabGrp');if(tg)tg.classList.toggle('enc',t==='encashment');
   // Sync SC input to this tab's value
   document.getElementById('inpSC').value=SC();
   const t2=SC()*0.18;
@@ -1776,10 +1792,10 @@ async function copyInvoiceImg(opts){
   toast('Copying invoice…');
   try{
     const snap=document.getElementById('snapTarget');
-    snap.innerHTML=`<div id="print-wrap" style="width:794px;background:#fff;padding:68px 83px 60px 83px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">${printHTML(data,billOpts)}</div>`;
+    snap.innerHTML=`<div id="print-wrap" style="width:520px;background:#fff;padding:26px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">${printHTML(data,billOpts)}</div>`;
     await new Promise(r=>setTimeout(r,200));
     const el=snap.querySelector('#print-wrap');
-    const canvas=await html2canvas(el,{scale:2.5,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:794,windowWidth:794});
+    const canvas=await html2canvas(el,{scale:3.5,useCORS:true,allowTaint:true,backgroundColor:'#fff',logging:false,width:520,windowWidth:520});
     snap.innerHTML='';
     canvas.toBlob(async blob=>{
       if(!blob){toast('Capture failed');return;}
@@ -1897,149 +1913,135 @@ function printDateOnly(){
   return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
 }
 function printHTML(data, opts){
-  const {computed,totalFX,slab,sc,scGst,nostro,tcsAmount,total,pmodes}=data;
-  const active=computed.filter(r=>r.forexINR>0);
-  const slabR=Math.round(slab), scGstR=Math.round(scGst), totalR=Math.round(total);
-  const typeLabel = opts.typeLabel||(TYPE==='sale'?'SALE':'ENCASHMENT');
-  const totalLabel= opts.totalLabel||(TYPE==='sale'?'TOTAL PAYABLE':'AMOUNT RECEIVABLE');
-  const splitBadge= opts.splitLabel ? `<div style="font-size:7pt;letter-spacing:.1em;text-transform:uppercase;color:#777;margin-top:3pt">${opts.splitLabel}</div>` : '';
+  opts = opts || {};
+  const {computed,totalFX,slab,sc,scGst,nostro,tcsAmount,total}=data;
+  const isSale = (TYPE==='sale');
+  const active = computed.filter(r => (r.forexINR||0) > 0);
 
-  const tRows = active.map(r=>{
-    const rv=parseFloat(r.rate)||0;
-    const rd=rv<0.01?5:rv<1?4:2;
-    const fi=cinfo(r.code);
-    const txnType=r.txnType||'currency';
-    const currLabel=txnType==='card'
-      ?`<strong>Forex Card</strong> <span style="font-family:Georgia,serif;color:#666;font-style:italic">&#x2014; ${r.code}</span>`
-      :txnType==='remittance'
-      ?`<strong>Remittance</strong> <span style="font-family:Georgia,serif;color:#666;font-style:italic">&#x2014; ${r.code}</span>`
-      :`<strong>${fi.code}</strong> <span style="font-family:Georgia,serif;color:#666;font-style:italic">&#x2014; ${fi.name}</span>`;
-    return`<tr>
-      <td style="padding:9pt 0;border-bottom:.5pt solid #D0D0D0;font-size:10pt">${currLabel}</td>
-      <td style="padding:9pt 8pt;border-bottom:.5pt solid #D0D0D0;font-size:10pt;text-align:right">${fcurr(r.currAmt,r.code)}</td>
-      <td style="padding:9pt 8pt;border-bottom:.5pt solid #D0D0D0;font-size:10pt;text-align:right">${rv.toFixed(rd)}</td>
-      <td style="padding:9pt 0 9pt 8pt;border-bottom:.5pt solid #D0D0D0;font-size:10pt;text-align:right;font-weight:700">${fINR(r.forexINR)}</td>
-    </tr>`;
-  }).join('');
+  const docTitle      = isSale ? 'Proforma Invoice' : 'Encashment Quote';
+  const txnLabel      = isSale ? 'Sale' : 'Encashment';
+  const totalLabel    = isSale ? 'Amount payable' : 'Amount receivable';
+  const totalSubLabel = isSale ? 'Total the customer pays' : 'Total the customer receives';
+  const splitBadge    = (opts.splitLabel) ? `<div class="pf-split">${opts.splitLabel}</div>` : '';
 
-  const subRow = active.length>1 ? `<tr>
-    <td colspan="3" style="padding:8pt 0 4pt;font-size:8.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#555">Subtotal</td>
-    <td style="padding:8pt 0 4pt 8pt;text-align:right;font-size:10pt;font-weight:700">${fINR(totalFX)}</td>
-  </tr>` : '';
+  // footed display components — the column reconciles to the validated total
+  const fxR     = Math.round(totalFX);
+  const scR     = Math.round(sc);
+  const tcsR    = Math.round(tcsAmount || 0);
+  const nostroR = Math.round(nostro || 0);
+  const totalR  = Math.round(total);
+  const gstShown = isSale ? (totalR - fxR - scR - tcsR - nostroR) : (fxR - scR - totalR);
 
-  const nostroAmt=nostro||0;
-  const totalCharges=slabR+sc+scGstR+nostroAmt+tcsAmount;
-  const payTxt=pmodes.join('  \u00B7  ');
+  // formatters matching the proforma design (whole rupees, Indian numbering)
+  const R    = n => '₹' + fn(Math.round(n), 0);
+  const FC   = (n, code) => { const i = cinfo(code); const d = (i && i.dec != null) ? i.dec : 2; return Number(n||0).toLocaleString('en-IN', {minimumFractionDigits:d, maximumFractionDigits:d}); };
+  const RATE = rv => { const d = rv < 1 ? 4 : 2; return '₹' + Number(rv||0).toLocaleString('en-IN', {minimumFractionDigits:d, maximumFractionDigits:d}); };
+  const prod = t => t==='card' ? 'Forex card' : t==='remittance' ? 'Remittance' : 'Cash';
 
-  const chargeR=(label,sub,val)=>`<tr>
-    <td style="padding:8pt 0;border-bottom:.5pt solid #E0E0E0;font-size:10pt;width:70%">${label}${sub?` <span style="font-family:Georgia,serif;font-style:italic;color:#666;font-size:9pt">\u00B7 ${sub}</span>`:''}</td>
-    <td style="padding:8pt 0 8pt 8pt;border-bottom:.5pt solid #E0E0E0;font-size:10pt;text-align:right;font-weight:600;width:30%">${val}</td>
-  </tr>`;
+  // transaction summary
+  let sumHTML;
+  if (active.length === 1){
+    const r = active[0]; const rv = parseFloat(r.rate)||0;
+    sumHTML = `<div class="pf-srow"><span class="pf-sk">${isSale?'You buy':'You sell'} <small>· ${prod(r.txnType||'currency')}</small></span><span class="pf-sv">${FC(r.currAmt,r.code)} ${r.code}</span></div>
+      <div class="pf-srate">1 ${r.code} = ${RATE(rv)}</div>`;
+  } else {
+    sumHTML = active.map(r=>{ const rv = parseFloat(r.rate)||0;
+      return `<div class="pf-srow"><span class="pf-sk"><span class="pf-amt">${FC(r.currAmt,r.code)} ${r.code}</span><span class="pf-rt">@ ${RATE(rv)}</span></span><span class="pf-sv">${R(r.forexINR)}</span></div>`;
+    }).join('');
+  }
 
-  const tcsLabel=tcsAmount>0?chargeR(`TCS @ ${tcsType==='education'?'2%':'20%'}`,tcsType==='education'?'Education':'Personal',fINR(tcsAmount)):'';
+  // line items
+  const itemRow = (label, sub, val) => `<div class="pf-itrow"><span class="pf-itk">${label}${sub?`<small>${sub}</small>`:''}</span><span class="pf-itv">${val}</span></div>`;
+  let items = `<div class="pf-itrow"><span class="pf-itk">Foreign exchange value</span><span class="pf-itv">${R(fxR)}</span></div>`;
+  items += itemRow('Service charge', '', R(scR));
+  items += itemRow('GST', 'Goods &amp; Services Tax', R(gstShown));
+  if (tcsR > 0)    items += itemRow(`TCS @ ${tcsType==='education'?'2%':'20%'}`, 'Tax Collected at Source · LRS', R(tcsR));
+  if (nostroR > 0) items += itemRow('Nostro / correspondent', 'Pass-through bank charge', R(nostroR));
 
-  return`<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-<title>&#8203;</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-@page{size:A4 portrait;margin:18mm 22mm 16mm 22mm;}
-@media print{
-  a[href]:after,a[href]::after{content:''!important;display:none!important}
-  abbr[title]:after{content:''!important}
-}
-html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0A0A0A;background:#fff}
-.serif{font-family:'Playfair Display',Georgia,'Times New Roman',serif}
-table{border-collapse:collapse;width:100%}
+  return `<style>
+.pf-doc{position:relative;width:100%;background:#fff;color:#13233f;font-family:"Libre Franklin",system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.pf-doc *{box-sizing:border-box;margin:0;padding:0}
+.pf-doc em{font-style:normal}
+.pf-accent{position:relative;height:3px;background:#0c1f44}
+.pf-accent .pf-lime{position:absolute;top:0;right:0;width:90px;height:3px;background:#c4d62e}
+.pf-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:30px 0 20px;border-bottom:1.5px solid #13233f;margin-bottom:22px}
+.pf-mark{font-family:"Spectral",Georgia,serif;font-weight:600;font-size:23px;letter-spacing:-.01em;color:#13233f;line-height:1}
+.pf-mark em{color:#2f6fb0}
+.pf-sub{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#7d899b;font-weight:600;margin-top:5px}
+.pf-reg{font-size:10.5px;color:#7d899b;margin-top:6px;letter-spacing:.01em}
+.pf-docr{text-align:right;flex:none}
+.pf-idt{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#2f6fb0;font-weight:700}
+.pf-idtrule{width:34px;height:2px;background:#4a8fd0;margin:6px 0 12px auto}
+.pf-dlabel{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#7d899b;font-weight:700}
+.pf-date{font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-size:12.5px;color:#13233f;font-weight:600;margin-top:3px}
+.pf-split{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#7d899b;font-weight:700;margin-top:7px}
+.pf-meta{display:flex;gap:30px;flex-wrap:wrap;margin-bottom:22px}
+.pf-mk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#48566e;font-weight:700;margin-bottom:6px}
+.pf-mv{font-size:12px;font-weight:500;color:#13233f}
+.pf-sum{background:#f5f7fa;border:1px solid #dde3ea;border-radius:8px;padding:15px 18px;margin-bottom:22px}
+.pf-srow{display:flex;justify-content:space-between;align-items:baseline;font-size:14px}
+.pf-srow + .pf-srow{margin-top:8px;padding-top:8px;border-top:1px dashed #dde3ea}
+.pf-sk{color:#48566e}
+.pf-sk small{color:#7d899b;font-weight:400}
+.pf-amt{font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-weight:600;color:#48566e;font-variant-numeric:tabular-nums}
+.pf-rt{font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-size:11.5px;color:#7d899b;font-weight:500;margin-left:11px}
+.pf-sv{font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-weight:700;color:#13233f;font-variant-numeric:tabular-nums}
+.pf-srate{font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-size:12px;color:#7d899b;margin-top:7px}
+.pf-items{margin-bottom:4px}
+.pf-ith{display:flex;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#7d899b;font-weight:700;padding-bottom:8px;border-bottom:1.5px solid #cdd5df}
+.pf-thr{margin-left:auto}
+.pf-itrow{display:flex;align-items:baseline;padding:10px 0;border-bottom:1px solid #e9edf2;font-size:13.5px}
+.pf-itk{color:#48566e}
+.pf-itk small{display:block;color:#7d899b;font-size:11px;margin-top:1px}
+.pf-itv{margin-left:auto;font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-weight:700;color:#13233f;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pf-total{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-top:14px;padding-top:16px;border-top:2px solid #13233f}
+.pf-total .pf-tlime{position:absolute;top:-2px;left:0;width:64px;height:2px;background:#c4d62e}
+.pf-tl{font-size:11px;letter-spacing:.04em;color:#48566e;font-weight:600}
+.pf-tlbig{display:block;font-family:"Spectral",Georgia,serif;font-size:15px;color:#13233f;font-weight:600;margin-top:2px}
+.pf-tv{font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.5px;line-height:.95;color:#13233f;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pf-cur{font-size:30px;color:#13233f;font-weight:600;margin-right:3px}
+.pf-foot{margin-top:24px;padding-top:15px;border-top:1px solid #dde3ea}
+.pf-terms{font-size:9.5px;color:#7d899b;line-height:1.65}
+.pf-footline{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid #e9edf2}
+.pf-co{font-size:10.5px;font-weight:600;color:#48566e;letter-spacing:.01em}
+.pf-site{font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-size:10.5px;font-weight:600;color:#2f6fb0;letter-spacing:.01em}
+.pf-base{height:2px;background:#0c1f44;margin-top:28px}
 </style>
-</head>
-<body>
-
-  <!-- MASTHEAD -->
-  <div style="margin-bottom:10pt">
-    <div class="serif" style="font-size:26pt;font-weight:700;letter-spacing:-.3px;line-height:1;color:#0A0A0A">Matrix Forex</div>
-    <div style="font-size:7.5pt;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#666;margin-top:5pt">RBI Authorised Dealer</div>
-  </div>
-  <div style="border-top:2.5pt solid #0A0A0A;border-bottom:1pt solid #0A0A0A;padding:1.5pt 0;margin-bottom:14pt"></div>
-
-  <!-- PROFORMA INVOICE TITLE -->
-  <div style="display:flex;align-items:center;gap:12pt;margin-bottom:14pt">
-    <div style="flex:1;height:.75pt;background:#999"></div>
-    <div class="serif" style="font-size:11pt;font-weight:700;letter-spacing:.28em;text-transform:uppercase;white-space:nowrap;color:#0A0A0A">Proforma Invoice</div>
-    <div style="flex:1;height:.75pt;background:#999"></div>
-  </div>
-
-  <!-- DATE / TRANSACTION META -->
-  <div style="display:flex;justify-content:flex-end;margin-bottom:18pt;gap:16pt">
-    <div style="text-align:right">
-      <div style="font-size:7pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:2pt">Date of Issue</div>
-      <div style="font-size:10pt;font-weight:600;color:#0A0A0A">${printDateOnly()}</div>
+<div class="pf-doc">
+  <div class="pf-accent"><div class="pf-lime"></div></div>
+  <div class="pf-top">
+    <div class="pf-brand">
+      <div class="pf-mark">Matrix<em>·</em>Forex</div>
+      <div class="pf-sub">Services Pvt. Ltd. · since 2011</div>
+      <div class="pf-reg">RBI Authorised Dealer · Category II</div>
     </div>
-    <div style="text-align:right">
-      <div style="font-size:7pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:2pt">Transaction</div>
-      <div style="font-size:10pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0A0A0A">${typeLabel}</div>
+    <div class="pf-docr">
+      <div class="pf-idt">${docTitle}</div>
+      <div class="pf-idtrule"></div>
+      <div class="pf-dlabel">Dated</div>
+      <div class="pf-date">${printDateOnly()}</div>
       ${splitBadge}
     </div>
   </div>
-
-  <!-- SECTION I: CURRENCIES -->
-  <div style="margin-bottom:16pt">
-    <div style="font-size:7.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0A0A0A;margin-bottom:4pt">I &middot; Currencies Exchanged</div>
-    <div style="border-bottom:1.2pt solid #0A0A0A;margin-bottom:0"></div>
-    <table>
-      <thead><tr>
-        <th style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#666;padding:6pt 0;text-align:left;border-bottom:.75pt solid #B0B0B0;width:38%">Currency</th>
-        <th style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#666;padding:6pt 8pt;text-align:right;border-bottom:.75pt solid #B0B0B0;width:20%">Amount</th>
-        <th style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#666;padding:6pt 8pt;text-align:right;border-bottom:.75pt solid #B0B0B0;width:22%">Rate (&#8377;)</th>
-        <th style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#666;padding:6pt 0 6pt 8pt;text-align:right;border-bottom:.75pt solid #B0B0B0;width:20%">INR Value</th>
-      </tr></thead>
-      <tbody>${tRows}${subRow}</tbody>
-    </table>
+  <div class="pf-meta">
+    <div class="pf-mi"><div class="pf-mk">Transaction</div><div class="pf-mv">${txnLabel}</div></div>
   </div>
-
-  <!-- SECTION II: CHARGES -->
-  <div style="margin-bottom:14pt">
-    <div style="font-size:7.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0A0A0A;margin-bottom:4pt">II &middot; Charges &amp; Taxes</div>
-    <div style="border-bottom:1.2pt solid #0A0A0A;margin-bottom:0"></div>
-    <table>
-      <tbody>
-        ${chargeR('Goods &amp; Service Tax (GST)','',fINR(slabR+scGstR))}
-        ${chargeR('Service Charges','',fINR(sc))}
-        ${nostroAmt>0?chargeR('Nostro Charges','',fINR(nostroAmt)):''}
-        ${tcsLabel}
-        <tr>
-          <td style="padding:8pt 0 0;font-size:10pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-top:1pt solid #0A0A0A">Total Charges</td>
-          <td style="padding:8pt 0 0 8pt;text-align:right;font-size:10pt;font-weight:700;border-top:1pt solid #0A0A0A">${fINR(totalCharges)}</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="pf-sum">${sumHTML}</div>
+  <div class="pf-items">
+    <div class="pf-ith"><span>Description</span><span class="pf-thr">Amount (INR)</span></div>
+    ${items}
+    <div class="pf-total"><div class="pf-tlime"></div>
+      <div class="pf-tl">${totalSubLabel}<span class="pf-tlbig">${totalLabel}</span></div>
+      <div class="pf-tv"><span class="pf-cur">₹</span>${fn(totalR,0)}</div>
+    </div>
   </div>
-
-  <!-- TOTAL PAYABLE -->
-  <div style="border-top:1.5pt solid #0A0A0A;border-bottom:1.5pt solid #0A0A0A;padding:10pt 0;margin-bottom:14pt;display:flex;justify-content:space-between;align-items:baseline">
-    <span style="font-size:8pt;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#0A0A0A">${totalLabel}</span>
-    <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:26pt;font-weight:700;letter-spacing:-.5px;color:#0A0A0A">${fINR(totalR)}</span>
+  <div class="pf-foot">
+    <div class="pf-terms">This is a proforma invoice for quotation purposes and is not a tax invoice. Rates are indicative and subject to confirmation at the time of the transaction.</div>
+    <div class="pf-footline"><span class="pf-co">Matrix Forex Services Pvt. Ltd.</span><span class="pf-site">matrixforex.in</span></div>
   </div>
-
-  <!-- MODE OF PAYMENT -->
-  <div style="margin-bottom:20pt">
-    <div style="font-size:7pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#888;margin-bottom:4pt">Mode of Payment</div>
-    <div style="font-size:10pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0A0A0A">${payTxt}</div>
-  </div>
-
-  <!-- FOOTER -->
-  <div style="border-top:1pt solid #CCC;padding-top:8pt;display:flex;justify-content:space-between;align-items:flex-start">
-    <div style="font-size:8pt;font-family:Georgia,serif;color:#666;font-style:italic;line-height:1.6;max-width:68%">This proforma invoice is issued for reference purposes only. It does not constitute an official tax invoice, receipt, or bill of any kind.</div>
-    <div style="font-size:7pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#999;text-align:right">Matrix Forex<br>Foreign Exchange</div>
-  </div>
-
-<script>document.fonts.ready.then(()=>{setTimeout(()=>{window.print();},400);});<\/script>
-</body>
-</html>`;}
+  <div class="pf-base"></div>
+</div>`;
+}
 
 // ══════════ TOAST / FORMAT ══════════
 let toastTimer;
