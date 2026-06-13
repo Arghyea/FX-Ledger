@@ -1921,7 +1921,6 @@ function printHTML(data, opts){
   const docTitle      = isSale ? 'Proforma Invoice' : 'Encashment Quote';
   const txnLabel      = isSale ? 'Sale' : 'Encashment';
   const totalLabel    = isSale ? 'Amount payable' : 'Amount receivable';
-  const totalSubLabel = isSale ? 'Total the customer pays' : 'Total the customer receives';
   const splitBadge    = (opts.splitLabel) ? `<div class="pf-split">${opts.splitLabel}</div>` : '';
 
   // footed display components — the column reconciles to the validated total
@@ -1996,8 +1995,7 @@ function printHTML(data, opts){
 .pf-itv{margin-left:auto;font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-weight:700;color:#13233f;white-space:nowrap;font-variant-numeric:tabular-nums}
 .pf-total{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-top:14px;padding-top:16px;border-top:2px solid #13233f}
 .pf-total .pf-tlime{position:absolute;top:-2px;left:0;width:64px;height:2px;background:#c4d62e}
-.pf-tl{font-size:11px;letter-spacing:.04em;color:#48566e;font-weight:600}
-.pf-tlbig{display:block;font-family:"Spectral",Georgia,serif;font-size:15px;color:#13233f;font-weight:600;margin-top:2px}
+.pf-tl{font-family:"Spectral",Georgia,serif;font-size:17px;color:#13233f;font-weight:600;letter-spacing:.005em}
 .pf-tv{font-family:'DM Sans',system-ui,-apple-system,sans-serif;font-weight:700;font-size:36px;letter-spacing:-.5px;line-height:.95;color:#13233f;white-space:nowrap;font-variant-numeric:tabular-nums}
 .pf-cur{font-size:30px;color:#13233f;font-weight:600;margin-right:3px}
 .pf-foot{margin-top:24px;padding-top:15px;border-top:1px solid #dde3ea}
@@ -2031,7 +2029,7 @@ function printHTML(data, opts){
     <div class="pf-ith"><span>Description</span><span class="pf-thr">Amount (INR)</span></div>
     ${items}
     <div class="pf-total"><div class="pf-tlime"></div>
-      <div class="pf-tl">${totalSubLabel}<span class="pf-tlbig">${totalLabel}</span></div>
+      <div class="pf-tl">${totalLabel}</div>
       <div class="pf-tv"><span class="pf-cur">₹</span>${fn(totalR,0)}</div>
     </div>
   </div>
