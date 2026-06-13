@@ -1920,7 +1920,7 @@ function printHTML(data, opts){
 
   const docTitle      = isSale ? 'Proforma Invoice' : 'Encashment Quote';
   const txnLabel      = isSale ? 'Sale' : 'Encashment';
-  const totalLabel    = isSale ? 'Amount payable' : 'Amount receivable';
+  const totalLabel    = isSale ? 'Amount Payable' : 'Amount Receivable';
   const splitBadge    = (opts.splitLabel) ? `<div class="pf-split">${opts.splitLabel}</div>` : '';
 
   // footed display components — the column reconciles to the validated total
