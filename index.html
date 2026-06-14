@@ -1941,7 +1941,7 @@ function printHTML(data, opts){
   let sumHTML;
   if (active.length === 1){
     const r = active[0]; const rv = parseFloat(r.rate)||0;
-    sumHTML = `<div class="pf-srow"><span class="pf-sk">${isSale?'You buy':'You sell'} <small>· ${prod(r.txnType||'currency')}</small></span><span class="pf-sv">${FC(r.currAmt,r.code)} ${r.code}</span></div>
+    sumHTML = `<div class="pf-srow"><span class="pf-sk">${isSale?'You Buy':'You Sell'} <small>· ${prod(r.txnType||'currency')}</small></span><span class="pf-sv">${FC(r.currAmt,r.code)} ${r.code}</span></div>
       <div class="pf-srate">1 ${r.code} = ${RATE(rv)}</div>`;
   } else {
     sumHTML = active.map(r=>{ const rv = parseFloat(r.rate)||0;
